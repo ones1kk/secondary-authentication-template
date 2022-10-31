@@ -1,15 +1,21 @@
 package io.github.ones1kk.authenticationtemplate.config.security;
 
-import io.github.ones1kk.authenticationtemplate.config.constant.AuthenticationPath;
+import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
+import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 
+import java.util.List;
 import java.util.stream.Stream;
 
+import static io.github.ones1kk.authenticationtemplate.config.constant.AuthenticationPath.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -17,14 +23,31 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class WebSecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
         authorizeRequest(http);
+        login(http);
         exceptionHandling(http);
+        logout(http);
         return http.build();
     }
 
-    private void exceptionHandling(HttpSecurity http) {
+    @Bean
+    AuthenticationManager authenticationManager() {
+        return new ProviderManager(List.of(new FirstAuthenticationProvider()));
+    }
+
+    private void login(HttpSecurity http) throws Exception {
+        FirstAuthenticationFilter firstFilter = new FirstAuthenticationFilter();
+        firstFilter.setAuthenticationManager(authenticationManager());
+
+        http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class);
+    }
+
+    private void logout(HttpSecurity http) throws Exception {
+        http.logout()
+                .logoutUrl(LOGOUT_API_PATH.getPath());
+    }
 
     }
 
@@ -36,7 +59,8 @@ public class WebSecurityConfig {
         // prevent to cross-origin resource sharing.
         http.cors().disable();
         // REST API server should be session stateless.
-        http.sessionManagement().sessionCreationPolicy(STATELESS);
+        http.sessionManagement()
+                .sessionCreationPolicy(STATELESS);
     }
 
     private void authorizeRequest(HttpSecurity http) throws Exception {
@@ -45,11 +69,11 @@ public class WebSecurityConfig {
                 .antMatchers(HttpMethod.GET, "/favicon.ic").permitAll()
 
                 // 1st login
-                .antMatchers(AuthenticationPath.FIRST_LOGIN_API_PATH.getPath())
+                .antMatchers(FIRST_LOGIN_API_PATH.getPath())
                 .hasAnyAuthority()
 
                 // 2nd login
-                .antMatchers(AuthenticationPath.SECOND_LOGIN_API_PATH.getPath())
+                .antMatchers(SECOND_LOGIN_API_PATH.getPath())
                 .permitAll()
 
                 // should be authenticated paths
@@ -61,7 +85,7 @@ public class WebSecurityConfig {
 //                .permitAll()
 
                 // logout
-                .antMatchers(AuthenticationPath.LOGOUT_API_PATH.getPath())
+                .antMatchers(LOGOUT_API_PATH.getPath())
                 .permitAll();
     }
 
