@@ -1,5 +1,7 @@
 package io.github.ones1kk.authenticationtemplate.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.ones1kk.authenticationtemplate.service.UserService;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 
@@ -22,6 +26,10 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
+    private final ObjectMapper objectMapper;
+
+    private final UserService userService;
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
@@ -34,11 +42,16 @@ public class WebSecurityConfig {
 
     @Bean
     AuthenticationManager authenticationManager() {
-        return new ProviderManager(List.of(new FirstAuthenticationProvider()));
+        return new ProviderManager(List.of(new FirstAuthenticationProvider(passwordEncoder(), userService)));
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     private void login(HttpSecurity http) throws Exception {
-        FirstAuthenticationFilter firstFilter = new FirstAuthenticationFilter();
+        FirstAuthenticationFilter firstFilter = new FirstAuthenticationFilter(objectMapper);
         firstFilter.setAuthenticationManager(authenticationManager());
 
         http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class);
@@ -81,8 +94,8 @@ public class WebSecurityConfig {
                 .hasAnyAuthority()
 
                 // exceptionally permitted paths
-//                .antMatchers(allowedResources())
-//                .permitAll()
+                .antMatchers(allowedResources())
+                .permitAll()
 
                 // logout
                 .antMatchers(LOGOUT_API_PATH.getPath())
@@ -96,6 +109,6 @@ public class WebSecurityConfig {
     }
 
     private static String[] allowedResources() {
-        return Stream.of("").toArray(String[]::new);
+        return Stream.of("/test").toArray(String[]::new);
     }
 }
