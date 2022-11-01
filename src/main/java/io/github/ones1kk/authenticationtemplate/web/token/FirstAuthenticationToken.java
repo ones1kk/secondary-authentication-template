@@ -14,18 +14,17 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
 
     private final Collection<CustomGrantedAuthority> authorities;
 
-    @Setter
-    private Object principal;
+    private final Object principal;
 
-    @Setter
-    private Object credentials;
+    private String credentials;
 
-    protected FirstAuthenticationToken() {
+    public FirstAuthenticationToken(Object principal) {
         super(Collections.singletonList(AUTHORITY));
         this.authorities = Collections.singletonList(AUTHORITY);
+        this.principal = principal;
     }
 
-    public FirstAuthenticationToken(Object principal, Object credentials) {
+    public FirstAuthenticationToken(Object principal, String credentials) {
         super(Collections.singletonList(AUTHORITY));
         this.authorities = Collections.singletonList(AUTHORITY);
         this.principal = principal;
@@ -35,10 +34,11 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public void eraseCredentials() {
         super.eraseCredentials();
+        this.credentials = null;
     }
 
     @Override
-    public Object getCredentials() {
+    public String getCredentials() {
         return this.credentials;
     }
 

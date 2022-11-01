@@ -1,10 +1,12 @@
 package io.github.ones1kk.authenticationtemplate.web.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.config.constant.AuthenticationPath;
+import io.github.ones1kk.authenticationtemplate.web.dto.LoginUserDto;
+import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -16,32 +18,27 @@ import java.io.IOException;
 
 public class FirstAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
+    private final ObjectMapper objectMapper;
+
     private static final RequestMatcher DEFAULT_REQUEST_MATCHER = new AntPathRequestMatcher(
             AuthenticationPath.FIRST_LOGIN_API_PATH.getPath(), HttpMethod.POST.name());
 
-    public FirstAuthenticationFilter() {
+    public FirstAuthenticationFilter(ObjectMapper objectMapper) {
         super(DEFAULT_REQUEST_MATCHER);
-    }
-
-    public FirstAuthenticationFilter(String requestPattern) {
-        super(new AntPathRequestMatcher(requestPattern, HttpMethod.POST.name()));
+        this.objectMapper = objectMapper;
     }
 
     @Override
     protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        boolean required = super.requiresAuthentication(request, response);
-
-        Authentication token = SecurityContextHolder.getContext().getAuthentication();
-        if (token == null) return required;
-
-        return required;
+        return super.requiresAuthentication(request, response);
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        request.getParameterNames().asIterator().forEachRemaining(name -> System.out.println(request.getParameter(name)));
+        LoginUserDto loginUser = objectMapper.readValue(request.getReader(), LoginUserDto.class);
+        Authentication token = new FirstAuthenticationToken(loginUser.getId(), loginUser.getPassword());
 
         // call authentication provider.
-        return super.getAuthenticationManager().authenticate(null);
+        return super.getAuthenticationManager().authenticate(token);
     }
 }
