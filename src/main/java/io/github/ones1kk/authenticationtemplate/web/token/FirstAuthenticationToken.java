@@ -1,7 +1,6 @@
 package io.github.ones1kk.authenticationtemplate.web.token;
 
 import io.github.ones1kk.authenticationtemplate.web.token.authority.CustomGrantedAuthority;
-import lombok.Setter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 

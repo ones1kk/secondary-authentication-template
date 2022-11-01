@@ -16,7 +16,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CodeException.class)
     public ExceptionResponse handle(CodeException e, HttpServletResponse response) {
         String message = e.getMessage();
-        System.out.println(e.getStatus().value());
         response.setStatus(e.getStatus().value());
         return new ExceptionResponse(response.getStatus(), message);
     }
