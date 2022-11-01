@@ -4,21 +4,21 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class CodeException extends RuntimeException implements CodeThrowable<CodeException, String> {
+public class CodeException extends RuntimeException {
 
-    private final String code;
+    private final String message;
 
     private final HttpStatus status;
 
     private final Object[] args;
 
-    public CodeException(String code, Object... args) {
-        this(code, HttpStatus.INTERNAL_SERVER_ERROR, args);
+    public CodeException(String message, Object... args) {
+        this(message, HttpStatus.INTERNAL_SERVER_ERROR, args);
     }
 
-    public CodeException(String code, HttpStatus status, Object... args) {
+    public CodeException(String message, HttpStatus status, Object... args) {
         this.status = status;
-        this.code = code;
+        this.message = message;
         this.args = args;
     }
 }

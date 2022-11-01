@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ExceptionResponse {
 
-    private final String code;
+    private final int status;
 
     private final String message;
 
@@ -19,7 +19,7 @@ public class ExceptionResponse {
     private final LocalDateTime dateTime = LocalDateTime.now();
 
     public static ExceptionResponse from(HttpStatus httpStatus) {
-        return new ExceptionResponse(String.valueOf(httpStatus.value()), httpStatus.getReasonPhrase());
+        return new ExceptionResponse(httpStatus.value(), httpStatus.getReasonPhrase());
     }
 
 }
