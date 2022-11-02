@@ -1,6 +1,6 @@
 package io.github.ones1kk.authenticationtemplate.web.exception.advice;
 
-import io.github.ones1kk.authenticationtemplate.web.exception.model.CodeException;
+import io.github.ones1kk.authenticationtemplate.web.exception.model.GlobalException;
 import io.github.ones1kk.authenticationtemplate.web.exception.model.ExceptionResponse;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CodeException.class)
-    public ExceptionResponse handle(CodeException e, HttpServletResponse response) {
+    @ExceptionHandler(GlobalException.class)
+    public ExceptionResponse handle(GlobalException e, HttpServletResponse response) {
         String message = e.getMessage();
         response.setStatus(e.getStatus().value());
         return new ExceptionResponse(response.getStatus(), message);

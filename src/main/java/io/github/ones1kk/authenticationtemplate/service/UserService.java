@@ -2,8 +2,8 @@ package io.github.ones1kk.authenticationtemplate.service;
 
 import io.github.ones1kk.authenticationtemplate.domain.User;
 import io.github.ones1kk.authenticationtemplate.repository.UserRepository;
-import io.github.ones1kk.authenticationtemplate.web.exception.model.CodeException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +14,6 @@ public class UserService {
 
     public User findByUserId(String userId) {
         return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CodeException("not found user"));
+                .orElseThrow(() -> new UsernameNotFoundException("not found user"));
     }
 }
