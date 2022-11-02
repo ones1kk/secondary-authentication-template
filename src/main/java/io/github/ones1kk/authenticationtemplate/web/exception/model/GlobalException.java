@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 
 @Getter
-public class CodeException extends AuthenticationException {
+public class GlobalException extends AuthenticationException {
 
     private final String message;
 
@@ -13,11 +13,11 @@ public class CodeException extends AuthenticationException {
 
     private final Object[] args;
 
-    public CodeException(String message, Object... args) {
+    public GlobalException(String message, Object... args) {
         this(message, HttpStatus.INTERNAL_SERVER_ERROR, args);
     }
 
-    public CodeException(String message, HttpStatus status, Object... args) {
+    public GlobalException(String message, HttpStatus status, Object... args) {
         super(message);
         this.status = status;
         this.message = message;
