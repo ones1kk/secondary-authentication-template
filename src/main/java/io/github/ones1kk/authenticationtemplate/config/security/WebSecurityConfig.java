@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.service.UserService;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
+import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,12 +31,12 @@ public class WebSecurityConfig {
 
     private final UserService userService;
 
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
         authorizeRequest(http);
         login(http);
-        exceptionHandling(http);
         logout(http);
         return http.build();
     }
@@ -50,9 +51,13 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     private void login(HttpSecurity http) throws Exception {
         FirstAuthenticationFilter firstFilter = new FirstAuthenticationFilter(objectMapper);
         firstFilter.setAuthenticationManager(authenticationManager());
+
+        firstFilter.setAuthenticationFailureHandler(
+                new FirstAuthenticationFailureHandler(objectMapper));
 
         http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class);
     }
@@ -61,9 +66,6 @@ public class WebSecurityConfig {
         http.logout()
                 .logoutUrl(LOGOUT_API_PATH.getPath());
     }
-
-    }
-
 
     private void configure(HttpSecurity http) throws Exception {
         // prevent to cross site request forgery.

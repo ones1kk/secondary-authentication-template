@@ -4,8 +4,8 @@ import io.github.ones1kk.authenticationtemplate.domain.User;
 import io.github.ones1kk.authenticationtemplate.service.UserService;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.codec.CodecException;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,7 @@ public class FirstAuthenticationProvider implements AuthenticationProvider {
 
         User findUser = userService.findByUserId(id);
         if (!passwordEncoder.matches(password, findUser.getPassword())) {
-            throw new CodecException("not matched password");
+            throw new BadCredentialsException("not matched password");
         }
 
         Authentication token = new FirstAuthenticationToken(findUser.getId());
