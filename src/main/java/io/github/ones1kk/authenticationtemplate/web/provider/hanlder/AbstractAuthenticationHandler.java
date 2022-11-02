@@ -27,7 +27,7 @@ public abstract class AbstractAuthenticationHandler {
                 .write(writePretty(new Object()));
     }
 
-    private <V> String  writePretty(V value) throws JsonProcessingException {
+    private <V> String writePretty(V value) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(value);
     }

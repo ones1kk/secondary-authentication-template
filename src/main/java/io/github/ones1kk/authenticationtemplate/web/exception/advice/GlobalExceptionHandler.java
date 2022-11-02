@@ -1,7 +1,7 @@
 package io.github.ones1kk.authenticationtemplate.web.exception.advice;
 
-import io.github.ones1kk.authenticationtemplate.web.exception.model.GlobalException;
 import io.github.ones1kk.authenticationtemplate.web.exception.model.ExceptionResponse;
+import io.github.ones1kk.authenticationtemplate.web.exception.model.GlobalException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;

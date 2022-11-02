@@ -31,6 +31,5 @@ public class InitData {
             User user = new User("ones1kk", "$2a$10$nwOTfZvyYwFlIDbrO/496eYGf3VaLup0htWeX/UH7IweIN/tsc5dO");
             userRepository.save(user);
         }
-
     }
 }
