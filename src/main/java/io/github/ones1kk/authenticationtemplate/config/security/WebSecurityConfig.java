@@ -116,7 +116,6 @@ public class WebSecurityConfig {
     }
 
 
-
     private static String[] staticResources() {
         return Stream.of("/static")
                 .map(resource -> resource + "/*/**")

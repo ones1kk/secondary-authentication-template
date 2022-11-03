@@ -9,9 +9,9 @@ import java.util.Collections;
 
 public class FirstAuthenticationToken extends AbstractAuthenticationToken {
 
-    public static final CustomGrantedAuthority AUTHORITY = new CustomGrantedAuthority("FIRST");
+    public static final GrantedAuthority AUTHORITY = new CustomGrantedAuthority("FIRST");
 
-    private final Collection<CustomGrantedAuthority> authorities;
+    private final Collection<GrantedAuthority> authorities;
 
     private final Object principal;
 
@@ -52,8 +52,7 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<GrantedAuthority> getAuthorities() {
-        return (Collection<GrantedAuthority>) (Object) this.authorities;
+        return this.authorities;
     }
 }

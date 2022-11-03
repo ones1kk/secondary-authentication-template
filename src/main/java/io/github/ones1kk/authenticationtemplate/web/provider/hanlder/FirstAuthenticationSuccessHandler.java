@@ -17,6 +17,6 @@ public class FirstAuthenticationSuccessHandler extends AbstractAuthenticationHan
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        // do some stuffs.
+        // TODO create token
     }
 }
