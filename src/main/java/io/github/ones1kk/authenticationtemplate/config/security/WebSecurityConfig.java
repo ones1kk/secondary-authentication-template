@@ -3,8 +3,12 @@ package io.github.ones1kk.authenticationtemplate.config.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.service.UserService;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
+import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
+import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationSuccessHandler;
+import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +16,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -24,13 +30,13 @@ import static io.github.ones1kk.authenticationtemplate.config.constant.Authentic
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
     private final ObjectMapper objectMapper;
 
     private final UserService userService;
-
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -51,15 +57,20 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     private void login(HttpSecurity http) throws Exception {
-        FirstAuthenticationFilter firstFilter = new FirstAuthenticationFilter(objectMapper);
+        AbstractAuthenticationProcessingFilter firstFilter = new FirstAuthenticationFilter(objectMapper);
         firstFilter.setAuthenticationManager(authenticationManager());
 
         firstFilter.setAuthenticationFailureHandler(
                 new FirstAuthenticationFailureHandler(objectMapper));
+        firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper));
 
-        http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class);
+        AbstractAuthenticationProcessingFilter secondFilter = new SecondAuthenticationFilter(objectMapper);
+        secondFilter.setAuthenticationManager(authenticationManager());
+
+
+        http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class)
+                .addFilterBefore(secondFilter, FilterSecurityInterceptor.class);
     }
 
     private void logout(HttpSecurity http) throws Exception {
@@ -85,15 +96,15 @@ public class WebSecurityConfig {
 
                 // 1st login
                 .antMatchers(FIRST_LOGIN_API_PATH.getPath())
-                .hasAnyAuthority()
+                .permitAll()
 
                 // 2nd login
                 .antMatchers(SECOND_LOGIN_API_PATH.getPath())
-                .permitAll()
+                .hasAnyAuthority(FirstAuthenticationToken.AUTHORITY.getAuthority())
 
                 // should be authenticated paths
-                .antMatchers("/test")
-                .hasAnyAuthority()
+                .antMatchers(notAllowedResources())
+                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority())
 
                 // exceptionally permitted paths
                 .antMatchers(allowedResources())
@@ -101,8 +112,10 @@ public class WebSecurityConfig {
 
                 // logout
                 .antMatchers(LOGOUT_API_PATH.getPath())
-                .permitAll();
+                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority());
     }
+
+
 
     private static String[] staticResources() {
         return Stream.of("/static")
@@ -110,7 +123,13 @@ public class WebSecurityConfig {
                 .toArray(String[]::new);
     }
 
+    private String[] notAllowedResources() {
+        return Stream.of("/not")
+                .toArray(String[]::new);
+    }
+
     private static String[] allowedResources() {
-        return Stream.of("/test").toArray(String[]::new);
+        return Stream.of("/test")
+                .toArray(String[]::new);
     }
 }
