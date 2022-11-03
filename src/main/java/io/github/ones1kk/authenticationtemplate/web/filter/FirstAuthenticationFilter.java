@@ -2,7 +2,7 @@ package io.github.ones1kk.authenticationtemplate.web.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.config.constant.AuthenticationPath;
-import io.github.ones1kk.authenticationtemplate.web.dto.LoginUserDto;
+import io.github.ones1kk.authenticationtemplate.web.dto.FirstLoginUserDto;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
@@ -35,10 +35,9 @@ public class FirstAuthenticationFilter extends AbstractAuthenticationProcessingF
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        LoginUserDto loginUser = objectMapper.readValue(request.getReader(), LoginUserDto.class);
+        FirstLoginUserDto loginUser = objectMapper.readValue(request.getReader(), FirstLoginUserDto.class);
         Authentication token = new FirstAuthenticationToken(loginUser.getId(), loginUser.getPassword());
 
-        // call authentication provider.
         return super.getAuthenticationManager().authenticate(token);
     }
 }
