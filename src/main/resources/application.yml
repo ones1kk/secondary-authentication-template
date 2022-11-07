@@ -22,4 +22,4 @@ spring:
 
 logging:
   level:
-    com.onesik: DEBUG
+    io.io.github.ones1kk: DEBUG
