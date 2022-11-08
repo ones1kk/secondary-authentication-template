@@ -1,15 +1,16 @@
 package io.github.ones1kk.authenticationtemplate.web.token;
 
-import io.github.ones1kk.authenticationtemplate.web.token.authority.CustomGrantedAuthority;
+import io.github.ones1kk.assertion.core.Asserts;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Collections;
 
 public class FirstAuthenticationToken extends AbstractAuthenticationToken {
 
-    public static final GrantedAuthority AUTHORITY = new CustomGrantedAuthority("FIRST");
+    public static final GrantedAuthority AUTHORITY = new SimpleGrantedAuthority("FIRST");
 
     private final Collection<GrantedAuthority> authorities;
 
@@ -28,6 +29,13 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
         this.authorities = Collections.singletonList(AUTHORITY);
         this.principal = principal;
         this.credentials = credentials;
+
+        Asserts.that(principal)
+                .as("FirstAuthenticationToken.principal is not allowed to be null")
+                .isNotNull();
+        Asserts.that(credentials)
+                .as("FirstAuthenticationToken.credentials should not be null").
+                isNotNull();
     }
 
     @Override
