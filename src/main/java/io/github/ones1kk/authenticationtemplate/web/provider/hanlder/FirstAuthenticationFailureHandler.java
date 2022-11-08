@@ -1,6 +1,7 @@
 package io.github.ones1kk.authenticationtemplate.web.provider.hanlder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -11,8 +12,8 @@ import java.io.IOException;
 
 public class FirstAuthenticationFailureHandler extends AbstractAuthenticationHandler implements AuthenticationFailureHandler {
 
-    public FirstAuthenticationFailureHandler(ObjectMapper objectMapper) {
-        super(objectMapper);
+    public FirstAuthenticationFailureHandler(ObjectMapper objectMapper, MessageSupport messageSupport) {
+        super(objectMapper, messageSupport);
     }
 
     @Override

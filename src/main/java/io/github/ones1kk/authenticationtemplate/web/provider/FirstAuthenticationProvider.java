@@ -24,7 +24,7 @@ public class FirstAuthenticationProvider implements AuthenticationProvider {
 
         User findUser = userService.findByUserId(id);
         if (!passwordEncoder.matches(password, findUser.getPassword())) {
-            throw new BadCredentialsException("not matched password");
+            throw new BadCredentialsException("M1");
         }
 
         Authentication token = new FirstAuthenticationToken(findUser.getId());

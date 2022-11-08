@@ -2,6 +2,7 @@ package io.github.ones1kk.authenticationtemplate.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.service.UserService;
+import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
@@ -38,6 +39,8 @@ public class WebSecurityConfig {
 
     private final UserService userService;
 
+    private final MessageSupport messageSupport;
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
@@ -62,8 +65,8 @@ public class WebSecurityConfig {
         firstFilter.setAuthenticationManager(authenticationManager());
 
         firstFilter.setAuthenticationFailureHandler(
-                new FirstAuthenticationFailureHandler(objectMapper));
-        firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper));
+                new FirstAuthenticationFailureHandler(objectMapper, messageSupport));
+        firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper, messageSupport));
 
         AbstractAuthenticationProcessingFilter secondFilter = new SecondAuthenticationFilter(objectMapper);
         secondFilter.setAuthenticationManager(authenticationManager());
