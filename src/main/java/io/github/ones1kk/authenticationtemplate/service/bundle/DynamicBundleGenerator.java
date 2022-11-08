@@ -1,6 +1,5 @@
 package io.github.ones1kk.authenticationtemplate.service.bundle;
 
-import io.github.ones1kk.authenticationtemplate.service.bundle.constant.DynamicBundle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
@@ -33,17 +32,13 @@ public class DynamicBundleGenerator<T> {
 
     private final Map<Locale, Function<T, String>[]> converterMap;
 
-    public static <T> BundleBuilder<T> builder(DynamicBundle bundle, Set<T> set) {
-        return new BundleBuilder<>(bundle.getBundleName(), set);
-    }
-
     public List<File> make() throws URISyntaxException, IOException {
         List<File> files = Collections.emptyList();
         if (this.converterMap.isEmpty()) return files;
 
         for (PackagingType type : PackagingType.values()) {
             if (type.isSupported()) {
-                files = type.createProperties(this);
+                type.createProperties(this);
                 break;
             }
         }

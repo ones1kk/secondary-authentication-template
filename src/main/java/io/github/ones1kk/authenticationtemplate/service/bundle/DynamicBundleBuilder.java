@@ -10,18 +10,18 @@ import java.util.function.Function;
 
 @RequiredArgsConstructor
 @SuppressWarnings("unchecked")
-public class BundleBuilder<T> {
+public class DynamicBundleBuilder<T> {
 
     private final String bundleName;
     private final Set<T> set;
     private final Map<Locale, Function<T, String>[]> converterMap = new HashMap<>();
 
-    public BundleBuilder<T> addLocale(Locale locale, Function<T, String> keyFunc, Function<T, String> valFunc) {
+    public DynamicBundleBuilder<T> addLocale(Locale locale, Function<T, String> keyFunc, Function<T, String> valFunc) {
         this.converterMap.put(locale, new Function[]{keyFunc, valFunc});
         return this;
     }
 
-    public BundleBuilder<T> addDefault(Function<T, String> keyFunc, Function<T, String> valFunc) {
+    public DynamicBundleBuilder<T> addDefault(Function<T, String> keyFunc, Function<T, String> valFunc) {
         return addLocale(Locale.ROOT, keyFunc, valFunc);
     }
 
