@@ -9,8 +9,8 @@ import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthentication
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationSuccessHandler;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
-import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
