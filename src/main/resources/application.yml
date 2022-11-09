@@ -1,3 +1,4 @@
+# This should be added to '.gitignore'.
 spring:
   h2:
     console:
@@ -22,4 +23,7 @@ spring:
 
 logging:
   level:
-    io.io.github.ones1kk: DEBUG
+    io.github.ones1kk: DEBUG
+
+token:
+  secret-key: c88d74ba-1554-48a4-b549-b926f5d77c9e
