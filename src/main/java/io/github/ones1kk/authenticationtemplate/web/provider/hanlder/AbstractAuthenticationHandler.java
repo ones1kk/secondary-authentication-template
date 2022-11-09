@@ -19,15 +19,10 @@ public abstract class AbstractAuthenticationHandler {
 
     private final MessageSupport messageSupport;
 
-    protected void setErrorMessage(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
+    protected void setErrorMessage(HttpServletResponse response, AuthenticationException exception) throws IOException {
         ExceptionResponse exceptionResponse = new ExceptionResponse(HttpStatus.UNAUTHORIZED.value(), messageSupport.get(exception.getMessage()));
         response.getWriter()
                 .write(writePretty(exceptionResponse));
-    }
-
-    protected void setResponseMessage(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        response.getWriter()
-                .write(writePretty(new Object()));
     }
 
     private <V> String writePretty(V value) throws JsonProcessingException {
