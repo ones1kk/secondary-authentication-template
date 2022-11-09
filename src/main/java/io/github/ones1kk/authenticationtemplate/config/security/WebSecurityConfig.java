@@ -9,8 +9,11 @@ import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthentication
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationSuccessHandler;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.provider.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -41,6 +44,9 @@ public class WebSecurityConfig {
 
     private final MessageSupport messageSupport;
 
+    @Value(value = "${token.secret-key}")
+    private String secretKey;
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
@@ -58,6 +64,11 @@ public class WebSecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    TokenProvider<?> tokenProvider() {
+        return new JwtProvider<>(secretKey);
     }
 
     private void login(HttpSecurity http) throws Exception {
