@@ -10,5 +10,4 @@ public enum TokenHeaderName {
     X_AUTH_TOKEN("X_AUTH_TOKEN");
 
     private final String name;
-
 }

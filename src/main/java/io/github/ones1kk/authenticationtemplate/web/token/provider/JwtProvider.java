@@ -107,7 +107,7 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
             throw new UnsupportedJwtException("M7");
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("M6");
-        }catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
             throw new SecurityException("M5");
         }
     }
