@@ -1,7 +1,6 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,9 +52,21 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
                 .compact();
     }
 
+    public String createToken(Long value, Long accessExpiredTime) {
+        Date now = new Date();
+        return Jwts.builder()
+                .claim(X_AUTH_TOKEN.getName(), value)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + accessExpiredTime))
+                .signWith(signKey, HS256)
+                .compact();
+    }
+
     @Override
     public boolean isExpired(String token) {
-        return getClaims(token)
+        Claims claims = getClaims(token);
+
+        return claims
                 .getExpiration()
                 .before(new Date());
     }
@@ -82,11 +93,23 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSecretKeyByteArray())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSecretKeyByteArray())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (SecurityException e) {
+            throw new SecurityException("M9");
+        } catch (MalformedJwtException e) {
+            throw new MalformedJwtException("M8");
+        } catch (UnsupportedJwtException e) {
+            throw new UnsupportedJwtException("M7");
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("M6");
+        }catch (ExpiredJwtException e) {
+            throw new SecurityException("M5");
+        }
     }
 
     private byte[] getSecretKeyByteArray(Charset charset) {

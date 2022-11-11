@@ -2,9 +2,11 @@ package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
 public interface TokenProvider<T> {
 
+    String createToken(T value);
+
     String createToken(String key, T value);
 
-    String createToken(T value);
+    String createToken(T value, Long accessExpiredTime);
 
     boolean isExpired(String token);
 
