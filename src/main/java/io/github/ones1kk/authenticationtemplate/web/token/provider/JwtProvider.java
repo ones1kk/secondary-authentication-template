@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 
@@ -17,10 +18,10 @@ import static org.springframework.util.StringUtils.hasText;
 public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Long> {
 
     // 3 hours
-    private final long accessExpiredTime = 2 * 90 * 60 * 1000L;
+    private final long accessExpiredTime = Duration.ofHours(2).toMillis();
 
     // 6 hours
-    private final long refreshExpiredTime = 6 * 60 * 60 * 1000L;
+    private final long refreshExpiredTime = Duration.ofHours(6).toMillis();
 
     private final String secretKey;
     private final Key signKey;
@@ -31,35 +32,22 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
     }
 
     @Override
-    public String createToken(String key, Long value) {
-        Date now = new Date();
-        return Jwts.builder()
-                .claim(key, value)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessExpiredTime))
-                .signWith(signKey, HS256)
-                .compact();
-    }
-
-    @Override
-    public String createToken(Long value) {
+    public String createToken(Long value, Long expiredTime) {
         Date now = new Date();
         return Jwts.builder()
                 .claim(X_AUTH_TOKEN.getName(), value)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessExpiredTime))
+                .setExpiration(new Date(now.getTime() + expiredTime))
                 .signWith(signKey, HS256)
                 .compact();
     }
 
-    public String createToken(Long value, Long accessExpiredTime) {
-        Date now = new Date();
-        return Jwts.builder()
-                .claim(X_AUTH_TOKEN.getName(), value)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessExpiredTime))
-                .signWith(signKey, HS256)
-                .compact();
+    public String createAccessToken(Long value) {
+        return createToken(value, accessExpiredTime);
+    }
+
+    public String createRefreshToken(String key, Long value) {
+        return createToken(value, refreshExpiredTime);
     }
 
     @Override
@@ -77,12 +65,12 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
     }
 
     private boolean isEqualKey(String token, Long key) {
-        return getKey(token).equals(key);
+        return getSubject(token).equals(key);
     }
 
     @Override
-    public Long getKey(String token) {
-        return Long.parseLong(getClaims(token).getSubject());
+    public Long getSubject(String token) {
+        return Long.parseLong(getClaims(token).get(X_AUTH_TOKEN.getName()).toString());
     }
 
     @Override

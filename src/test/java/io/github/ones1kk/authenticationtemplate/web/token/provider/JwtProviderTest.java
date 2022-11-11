@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class JwtProviderTest {
     private static final String SECRET_KEY = "c88d74ba-1554-48a4-b549-b926f5d77c9e";
@@ -17,16 +16,16 @@ class JwtProviderTest {
     JwtProvider<Long> jwtProvider = new JwtProvider<>(SECRET_KEY);
 
     @Test
+    @DisplayName("create token")
     void createToken() throws Exception {
         // given
         List<String> tokens = new ArrayList<>();
         // when
         for (long i = 0; i < 10; i++) {
-            tokens.add(jwtProvider.createToken(i));
+            tokens.add(jwtProvider.createAccessToken(i));
         }
         boolean isUnique = tokens.stream()
                 .allMatch(new HashSet<>()::add);
-
 
         // then
         assertThat(tokens).extracting(String::length)
@@ -63,8 +62,23 @@ class JwtProviderTest {
             Thread.sleep(200L);
 
             // then
+            assertThatNoException().isThrownBy(() -> jwtProvider.isExpired(token));
             assertThat(jwtProvider.isExpired(token)).isFalse();
         }
+    }
+
+    @Test
+    @DisplayName("get subject")
+    void getSubject() throws Exception {
+        // given
+        final Long id = 1L;
+        String token = jwtProvider.createAccessToken(id);
+
+        // when
+        Long subject = jwtProvider.getSubject(token);
+
+        // then
+        assertThat(subject).isEqualTo(id);
     }
 
 }
