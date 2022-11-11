@@ -4,19 +4,24 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Optional;
-import java.util.stream.Stream;
 
+import static io.github.ones1kk.authenticationtemplate.web.token.provider.constant.TokenHeaderName.X_AUTH_TOKEN;
 import static io.jsonwebtoken.SignatureAlgorithm.HS256;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.util.StringUtils.hasText;
 
 public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Long> {
+
+    // 3 hours
+    private final long accessExpiredTime = 2 * 90 * 60 * 1000L;
+
+    // 6 hours
+    private final long refreshExpiredTime = 6 * 60 * 60 * 1000L;
 
     private final String secretKey;
     private final Key signKey;
@@ -32,7 +37,18 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
         return Jwts.builder()
                 .claim(key, value)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expiredTime))
+                .setExpiration(new Date(now.getTime() + accessExpiredTime))
+                .signWith(signKey, HS256)
+                .compact();
+    }
+
+    @Override
+    public String createToken(Long value) {
+        Date now = new Date();
+        return Jwts.builder()
+                .claim(X_AUTH_TOKEN.getName(), value)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + accessExpiredTime))
                 .signWith(signKey, HS256)
                 .compact();
     }
@@ -55,19 +71,14 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
 
     @Override
     public Long getKey(String token) {
-        Claims claims = getClaims(token);
-        return Long.parseLong(claims.getSubject());
+        return Long.parseLong(getClaims(token).getSubject());
     }
 
     @Override
     public String resolveToken(HttpServletRequest request) {
-        Optional<Cookie> token = Stream.of(request.getCookies())
-                .filter(cookie -> cookie.getName().equals(cookieName))
-                .findFirst();
-        if (token.isEmpty()) return null;
-
-        return token.get()
-                .getValue();
+        String token = request.getHeader(X_AUTH_TOKEN.getName());
+        if (hasText(token)) return token;
+        return null;
     }
 
     private Claims getClaims(String token) {
