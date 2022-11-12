@@ -1,5 +1,6 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
+import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
@@ -17,18 +18,22 @@ import static org.springframework.util.StringUtils.hasText;
 
 public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Long> {
 
-    // 3 hours
-    private final long accessExpiredTime = Duration.ofHours(2).toMillis();
+    // 1 hours
+    private final long accessExpiredTime = Duration.ofHours(1).toMillis();
 
-    // 6 hours
-    private final long refreshExpiredTime = Duration.ofHours(6).toMillis();
+    // 3 hours
+    private final long refreshExpiredTime = Duration.ofHours(3).toMillis();
 
     private final String secretKey;
+
     private final Key signKey;
 
-    public JwtProvider(String secretKey) {
+    private final MessageSupport messageSupport;
+
+    public JwtProvider(String secretKey, MessageSupport messageSupport) {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         this.signKey = Keys.hmacShaKeyFor(getSecretKeyByteArray(UTF_8));
+        this.messageSupport = messageSupport;
     }
 
     @Override
@@ -46,15 +51,13 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
         return createToken(value, accessExpiredTime);
     }
 
-    public String createRefreshToken(String key, Long value) {
+    public String createRefreshToken(Long value) {
         return createToken(value, refreshExpiredTime);
     }
 
     @Override
     public boolean isExpired(String token) {
-        Claims claims = getClaims(token);
-
-        return claims
+        return getClaims(token)
                 .getExpiration()
                 .before(new Date());
     }
@@ -62,10 +65,6 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
     @Override
     public boolean isValid(String token, Long key) {
         return isEqualKey(token, key) && !isExpired(token);
-    }
-
-    private boolean isEqualKey(String token, Long key) {
-        return getSubject(token).equals(key);
     }
 
     @Override
@@ -80,6 +79,11 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
         return null;
     }
 
+    private boolean isEqualKey(String token, Long key) {
+        Long subject = getSubject(token);
+        return subject.equals(key);
+    }
+
     private Claims getClaims(String token) {
         try {
             return Jwts.parserBuilder()
@@ -88,15 +92,15 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
                     .parseClaimsJws(token)
                     .getBody();
         } catch (SecurityException e) {
-            throw new SecurityException("M9");
+            throw new SecurityException(messageSupport.get("M9"));
         } catch (MalformedJwtException e) {
-            throw new MalformedJwtException("M8");
+            throw new MalformedJwtException(messageSupport.get("M8"));
         } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException("M7");
+            throw new UnsupportedJwtException(messageSupport.get("M7"));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("M6");
+            throw new IllegalArgumentException(messageSupport.get("M6"));
         } catch (ExpiredJwtException e) {
-            throw new SecurityException("M5");
+            throw new SecurityException(messageSupport.get("M5"));
         }
     }
 
