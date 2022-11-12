@@ -6,6 +6,7 @@ import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
+import io.github.ones1kk.authenticationtemplate.web.provider.SecondAuthenticationProvider;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationSuccessHandler;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
@@ -58,7 +59,7 @@ public class WebSecurityConfig {
 
     @Bean
     AuthenticationManager authenticationManager() {
-        return new ProviderManager(List.of(new FirstAuthenticationProvider(passwordEncoder(), userService)));
+        return new ProviderManager(List.of(new FirstAuthenticationProvider(passwordEncoder(), userService), new SecondAuthenticationProvider()));
     }
 
     @Bean
@@ -67,8 +68,8 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    TokenProvider<?> tokenProvider() {
-        return new JwtProvider<>(secretKey);
+    JwtProvider<Long> tokenProvider() {
+        return new JwtProvider<>(secretKey, messageSupport);
     }
 
     private void login(HttpSecurity http) throws Exception {
@@ -77,11 +78,10 @@ public class WebSecurityConfig {
 
         firstFilter.setAuthenticationFailureHandler(
                 new FirstAuthenticationFailureHandler(objectMapper, messageSupport));
-        firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper, messageSupport));
+        firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper, messageSupport, tokenProvider()));
 
-        AbstractAuthenticationProcessingFilter secondFilter = new SecondAuthenticationFilter(objectMapper);
+        AbstractAuthenticationProcessingFilter secondFilter = new SecondAuthenticationFilter(objectMapper, tokenProvider());
         secondFilter.setAuthenticationManager(authenticationManager());
-
 
         http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class)
                 .addFilterBefore(secondFilter, FilterSecurityInterceptor.class);
