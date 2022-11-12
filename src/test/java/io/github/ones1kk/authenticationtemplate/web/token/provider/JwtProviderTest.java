@@ -1,25 +1,40 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
+import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
+import io.jsonwebtoken.MalformedJwtException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class JwtProviderTest {
-    private static final String SECRET_KEY = "c88d74ba-1554-48a4-b549-b926f5d77c9e";
 
-    JwtProvider<Long> jwtProvider = new JwtProvider<>(SECRET_KEY);
+    private static final String SECRET_KEY = UUID.randomUUID().toString();
+
+    @Mock
+    private MessageSupport messageSupport;
+
+    private JwtProvider<Long> jwtProvider;
+
+    @BeforeEach
+    void setup() {
+        jwtProvider = new JwtProvider<>(SECRET_KEY, messageSupport);
+    }
 
     @Test
     @DisplayName("create token")
     void createToken() throws Exception {
         // given
         List<String> tokens = new ArrayList<>();
+
         // when
         for (long i = 0; i < 10; i++) {
             tokens.add(jwtProvider.createAccessToken(i));
@@ -28,19 +43,81 @@ class JwtProviderTest {
                 .allMatch(new HashSet<>()::add);
 
         // then
+        assertThat(tokens).extracting(Object::toString)
+                .allMatch(Objects::nonNull);
         assertThat(tokens).extracting(String::length)
                 .allMatch(length -> length.equals(135));
         assertThat(isUnique).isTrue();
     }
 
     @Nested
-    @DisplayName("verify expired time of access token ")
-    class JWTExpiredTest {
+    class isValidTest {
+
         final Long id = 1L;
 
         @Test
-        @DisplayName("request after expired time")
-        void isExpired_true() throws Exception {
+        @DisplayName("verify same key or not")
+        void isValid_success() throws Exception {
+            // given
+            String token = jwtProvider.createToken(id, 10000L);
+
+            // when
+            boolean valid = jwtProvider.isValid(token, id);
+
+            // then
+            assertThat(valid).isTrue();
+        }
+
+        @Test
+        @DisplayName("different key value")
+        void isValid_fail_1() throws Exception {
+            // given
+            String token = jwtProvider.createToken(id, 1000L);
+
+            // when
+            boolean valid = jwtProvider.isValid(token, 2L);
+
+            // then
+            assertThat(valid).isFalse();
+        }
+
+        @Test
+        @DisplayName("different key value and after expired time")
+        void isValid_fail_2() throws Exception {
+            // given
+            String token = jwtProvider.createToken(id, 500L);
+
+            // when
+            Thread.sleep(1000L);
+
+            // then
+            assertThatThrownBy(() -> jwtProvider.isValid(token, 2L))
+                    .isInstanceOf(SecurityException.class);
+        }
+
+        @Test
+        @DisplayName("ask after expired time")
+        void isValid_fail_3() throws Exception {
+            // given
+            String token = jwtProvider.createToken(id, 500L);
+
+            // when
+            Thread.sleep(1000L);
+
+            // then
+            assertThatThrownBy(() -> jwtProvider.isValid(token, 2L))
+                    .isInstanceOf(SecurityException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("verify expired time of access token")
+    class isExpiredTest {
+        final Long id = 1L;
+
+        @Test
+        @DisplayName("ask after expired time")
+        void isExpired_success() throws Exception {
             // given
             String token = jwtProvider.createToken(id, 1000L);
 
@@ -53,8 +130,8 @@ class JwtProviderTest {
         }
 
         @Test
-        @DisplayName("request before expired time")
-        void isExpired_false() throws Exception {
+        @DisplayName("ask before expired time")
+        void isExpired_fail() throws Exception {
             // given
             String token = jwtProvider.createToken(id, 1000L);
 
@@ -67,18 +144,31 @@ class JwtProviderTest {
         }
     }
 
-    @Test
-    @DisplayName("get subject")
-    void getSubject() throws Exception {
-        // given
-        final Long id = 1L;
-        String token = jwtProvider.createAccessToken(id);
+    @Nested
+    class GetSubjectTest {
 
-        // when
-        Long subject = jwtProvider.getSubject(token);
+        @Test
+        @DisplayName("get subject")
+        void getSubject_success() throws Exception {
+            // given
+            final Long id = 1L;
+            String token = jwtProvider.createToken(id, 2000L);
 
-        // then
-        assertThat(subject).isEqualTo(id);
+            // when
+            Long subject = jwtProvider.getSubject(token);
+
+            // then
+            assertThat(subject).isEqualTo(id);
+        }
+
+        @Test
+        @DisplayName("fail to get subject")
+        void getSubject_fail() throws Exception {
+            String token = UUID.randomUUID().toString();
+
+            assertThatThrownBy(() -> jwtProvider.getSubject(token))
+                    .isInstanceOf(MalformedJwtException.class);
+        }
     }
 
 }
