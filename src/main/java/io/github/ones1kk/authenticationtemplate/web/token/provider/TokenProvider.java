@@ -6,7 +6,7 @@ public interface TokenProvider<T> {
 
     boolean isExpired(String token);
 
-    boolean isValid(String token, T key);
+    boolean isValid(String token, T key) throws Exception;
 
-    T getSubject(String token) throws Exception;
+    T getAuthentication(String token, Class<? extends T> clazz) throws Exception;
 }

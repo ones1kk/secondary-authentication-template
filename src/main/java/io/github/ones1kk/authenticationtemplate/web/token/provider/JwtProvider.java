@@ -1,7 +1,11 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Deserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,13 +14,14 @@ import java.security.Key;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 
 import static io.github.ones1kk.authenticationtemplate.web.token.provider.constant.TokenHeaderName.X_AUTH_TOKEN;
 import static io.jsonwebtoken.SignatureAlgorithm.HS256;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.util.StringUtils.hasText;
 
-public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Long> {
+public class JwtProvider<T> implements HttpRequestTokenProvider<T> {
 
     // 1 hours
     private final long accessExpiredTime = Duration.ofHours(1).toMillis();
@@ -30,14 +35,19 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
 
     private final MessageSupport messageSupport;
 
-    public JwtProvider(String secretKey, MessageSupport messageSupport) {
+    private final ObjectMapper objectMapper;
+
+    private static final Deserializer<Map<String, ?>> JWT_DESERIALIZER = new JacksonDeserializer<>(new ObjectMapper().enable(DeserializationFeature.USE_LONG_FOR_INTS));
+
+    public JwtProvider(String secretKey, MessageSupport messageSupport, ObjectMapper objectMapper) {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         this.signKey = Keys.hmacShaKeyFor(getSecretKeyByteArray(UTF_8));
         this.messageSupport = messageSupport;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public String createToken(Long value, Long expiredTime) {
+    public String createToken(T value, Long expiredTime) {
         Date now = new Date();
         return Jwts.builder()
                 .claim(X_AUTH_TOKEN.getName(), value)
@@ -47,11 +57,11 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
                 .compact();
     }
 
-    public String createAccessToken(Long value) {
+    public String createAccessToken(T value) {
         return createToken(value, accessExpiredTime);
     }
 
-    public String createRefreshToken(Long value) {
+    public String createRefreshToken(T value) {
         return createToken(value, refreshExpiredTime);
     }
 
@@ -63,13 +73,15 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
     }
 
     @Override
-    public boolean isValid(String token, Long key) {
+    public boolean isValid(String token, T key) throws Exception {
         return isEqualKey(token, key) && !isExpired(token);
     }
 
     @Override
-    public Long getSubject(String token) {
-        return Long.parseLong(getClaims(token).get(X_AUTH_TOKEN.getName()).toString());
+    public T getAuthentication(String token, Class<? extends T> clazz) {
+        Object authentication = getClaims(token)
+                .get(X_AUTH_TOKEN.getName());
+        return objectMapper.convertValue(authentication, clazz);
     }
 
     @Override
@@ -79,14 +91,16 @@ public class JwtProvider<T extends Long> implements HttpRequestTokenProvider<Lon
         return null;
     }
 
-    private boolean isEqualKey(String token, Long key) {
-        Long subject = getSubject(token);
-        return subject.equals(key);
+    @SuppressWarnings("unchecked")
+    private boolean isEqualKey(String token, T key) throws Exception {
+        T authentication = getAuthentication(token, (Class<? extends T>) key.getClass());
+        return authentication.equals(key);
     }
 
     private Claims getClaims(String token) {
         try {
             return Jwts.parserBuilder()
+                    .deserializeJsonWith(JWT_DESERIALIZER)
                     .setSigningKey(getSecretKeyByteArray())
                     .build()
                     .parseClaimsJws(token)

@@ -12,7 +12,6 @@ import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthen
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
-import io.github.ones1kk.authenticationtemplate.web.token.provider.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -69,7 +68,7 @@ public class WebSecurityConfig {
 
     @Bean
     JwtProvider<Long> tokenProvider() {
-        return new JwtProvider<>(secretKey, messageSupport);
+        return new JwtProvider<>(secretKey, messageSupport, objectMapper);
     }
 
     private void login(HttpSecurity http) throws Exception {
