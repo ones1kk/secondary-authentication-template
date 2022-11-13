@@ -158,11 +158,11 @@ class JwtProviderTest {
     }
 
     @Nested
-    class GetSubjectTest {
+    class GetAuthenticationTest {
 
         @Test
-        @DisplayName("get subject")
-        void getSubject_success() throws Exception {
+        @DisplayName("get authentication")
+        void getAuthentication_success() throws Exception {
             // given
             final Long id = 1L;
             Authentication key = new FirstAuthenticationToken(id);
@@ -172,13 +172,13 @@ class JwtProviderTest {
             Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
             // then
             assertThat(authentication.getCredentials()).isEqualTo(key.getCredentials());
-//            assertThat(authentication.getPrincipal()).isEqualTo(key.getPrincipal());
+            assertThat(authentication.getPrincipal()).isEqualTo(key.getPrincipal());
             assertThat(authentication.getAuthorities()).isEqualTo(key.getAuthorities());
         }
 
         @Test
         @DisplayName("fail to get subject")
-        void getSubject_fail() throws Exception {
+        void getAuthentication_fail() throws Exception {
             String token = UUID.randomUUID().toString();
 
             assertThatThrownBy(() -> jwtProvider.getAuthentication(token, FirstAuthenticationToken.class))
