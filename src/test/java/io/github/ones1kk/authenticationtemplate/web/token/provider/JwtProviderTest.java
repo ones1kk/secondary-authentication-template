@@ -1,6 +1,8 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
+import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.jsonwebtoken.MalformedJwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,7 +10,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 import java.util.*;
 
@@ -22,11 +26,14 @@ class JwtProviderTest {
     @Mock
     private MessageSupport messageSupport;
 
-    private JwtProvider<Long> jwtProvider;
+    @Spy
+    private ObjectMapper objectMapper;
+
+    private JwtProvider<Authentication> jwtProvider;
 
     @BeforeEach
     void setup() {
-        jwtProvider = new JwtProvider<>(SECRET_KEY, messageSupport);
+        jwtProvider = new JwtProvider<>(SECRET_KEY, messageSupport, objectMapper);
     }
 
     @Test
@@ -37,7 +44,7 @@ class JwtProviderTest {
 
         // when
         for (long i = 0; i < 10; i++) {
-            tokens.add(jwtProvider.createAccessToken(i));
+            tokens.add(jwtProvider.createAccessToken(new FirstAuthenticationToken(i)));
         }
         boolean isUnique = tokens.stream()
                 .allMatch(new HashSet<>()::add);
@@ -46,7 +53,7 @@ class JwtProviderTest {
         assertThat(tokens).extracting(Object::toString)
                 .allMatch(Objects::nonNull);
         assertThat(tokens).extracting(String::length)
-                .allMatch(length -> length.equals(135));
+                .allMatch(length -> length.equals(305));
         assertThat(isUnique).isTrue();
     }
 
@@ -59,10 +66,11 @@ class JwtProviderTest {
         @DisplayName("verify same key or not")
         void isValid_success() throws Exception {
             // given
-            String token = jwtProvider.createToken(id, 10000L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 10000L);
 
             // when
-            boolean valid = jwtProvider.isValid(token, id);
+            boolean valid = jwtProvider.isValid(token, key);
 
             // then
             assertThat(valid).isTrue();
@@ -72,10 +80,11 @@ class JwtProviderTest {
         @DisplayName("different key value")
         void isValid_fail_1() throws Exception {
             // given
-            String token = jwtProvider.createToken(id, 1000L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 1000L);
 
             // when
-            boolean valid = jwtProvider.isValid(token, 2L);
+            boolean valid = jwtProvider.isValid(token, new FirstAuthenticationToken(2L));
 
             // then
             assertThat(valid).isFalse();
@@ -85,13 +94,14 @@ class JwtProviderTest {
         @DisplayName("different key value and after expired time")
         void isValid_fail_2() throws Exception {
             // given
-            String token = jwtProvider.createToken(id, 500L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 500L);
 
             // when
             Thread.sleep(1000L);
 
             // then
-            assertThatThrownBy(() -> jwtProvider.isValid(token, 2L))
+            assertThatThrownBy(() -> jwtProvider.isValid(token, new FirstAuthenticationToken(2L)))
                     .isInstanceOf(SecurityException.class);
         }
 
@@ -99,13 +109,14 @@ class JwtProviderTest {
         @DisplayName("ask after expired time")
         void isValid_fail_3() throws Exception {
             // given
-            String token = jwtProvider.createToken(id, 500L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 500L);
 
             // when
             Thread.sleep(1000L);
 
             // then
-            assertThatThrownBy(() -> jwtProvider.isValid(token, 2L))
+            assertThatThrownBy(() -> jwtProvider.isValid(token, new FirstAuthenticationToken(2L)))
                     .isInstanceOf(SecurityException.class);
         }
     }
@@ -119,7 +130,8 @@ class JwtProviderTest {
         @DisplayName("ask after expired time")
         void isExpired_success() throws Exception {
             // given
-            String token = jwtProvider.createToken(id, 1000L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 1000L);
 
             // when
             Thread.sleep(1500L);
@@ -133,7 +145,8 @@ class JwtProviderTest {
         @DisplayName("ask before expired time")
         void isExpired_fail() throws Exception {
             // given
-            String token = jwtProvider.createToken(id, 1000L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 5000L);
 
             // when
             Thread.sleep(200L);
@@ -152,13 +165,15 @@ class JwtProviderTest {
         void getSubject_success() throws Exception {
             // given
             final Long id = 1L;
-            String token = jwtProvider.createToken(id, 2000L);
+            Authentication key = new FirstAuthenticationToken(id);
+            String token = jwtProvider.createToken(key, 5000L);
 
             // when
-            Long subject = jwtProvider.getSubject(token);
-
+            Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
             // then
-            assertThat(subject).isEqualTo(id);
+            assertThat(authentication.getCredentials()).isEqualTo(key.getCredentials());
+//            assertThat(authentication.getPrincipal()).isEqualTo(key.getPrincipal());
+            assertThat(authentication.getAuthorities()).isEqualTo(key.getAuthorities());
         }
 
         @Test
@@ -166,7 +181,7 @@ class JwtProviderTest {
         void getSubject_fail() throws Exception {
             String token = UUID.randomUUID().toString();
 
-            assertThatThrownBy(() -> jwtProvider.getSubject(token))
+            assertThatThrownBy(() -> jwtProvider.getAuthentication(token, FirstAuthenticationToken.class))
                     .isInstanceOf(MalformedJwtException.class);
         }
     }
