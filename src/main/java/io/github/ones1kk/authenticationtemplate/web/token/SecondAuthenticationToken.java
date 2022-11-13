@@ -1,20 +1,27 @@
 package io.github.ones1kk.authenticationtemplate.web.token;
 
 import io.github.ones1kk.assertion.core.Asserts;
+import io.github.ones1kk.authenticationtemplate.web.token.authority.CustomGrantedAuthority;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Collections;
 
 public class SecondAuthenticationToken extends AbstractAuthenticationToken {
 
-    public static final GrantedAuthority AUTHORITY = new SimpleGrantedAuthority("FIRST");
+    public static final CustomGrantedAuthority AUTHORITY = new CustomGrantedAuthority("FIRST");
 
-    private final Collection<GrantedAuthority> authorities;
+    private final Collection<CustomGrantedAuthority> authorities;
 
-    private final Object principal;
+    private Object principal;
+
+    private String name;
+
+    protected SecondAuthenticationToken() {
+        super(Collections.singletonList(AUTHORITY));
+        this.authorities = Collections.singletonList(AUTHORITY);
+    }
 
     public SecondAuthenticationToken(Object principal) {
         super(Collections.singletonList(AUTHORITY));
@@ -37,7 +44,8 @@ public class SecondAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<GrantedAuthority> getAuthorities() {
-        return this.authorities;
+        return (Collection<GrantedAuthority>) (Object) this.authorities;
     }
 }

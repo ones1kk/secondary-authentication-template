@@ -1,22 +1,29 @@
 package io.github.ones1kk.authenticationtemplate.web.token;
 
 import io.github.ones1kk.assertion.core.Asserts;
+import io.github.ones1kk.authenticationtemplate.web.token.authority.CustomGrantedAuthority;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Collections;
 
 public class FirstAuthenticationToken extends AbstractAuthenticationToken {
 
-    public static final GrantedAuthority AUTHORITY = new SimpleGrantedAuthority("FIRST");
+    public static final CustomGrantedAuthority AUTHORITY = new CustomGrantedAuthority("FIRST");
 
-    private final Collection<GrantedAuthority> authorities;
+    private final Collection<CustomGrantedAuthority> authorities;
 
-    private final Object principal;
+    private String name;
+
+    private Object principal;
 
     private String credentials;
+
+    protected FirstAuthenticationToken() {
+        super(Collections.singletonList(AUTHORITY));
+        this.authorities = Collections.singletonList(AUTHORITY);
+    }
 
     public FirstAuthenticationToken(Object principal) {
         super(Collections.singletonList(AUTHORITY));
@@ -41,7 +48,6 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public void eraseCredentials() {
         super.eraseCredentials();
-        this.credentials = null;
     }
 
     @Override
@@ -51,6 +57,9 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public Object getPrincipal() {
+        if (this.principal instanceof Long) {
+            return Long.parseLong(String.valueOf(this.principal));
+        }
         return this.principal;
     }
 
@@ -60,7 +69,8 @@ public class FirstAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<GrantedAuthority> getAuthorities() {
-        return this.authorities;
+        return (Collection<GrantedAuthority>) (Object) this.authorities;
     }
 }
