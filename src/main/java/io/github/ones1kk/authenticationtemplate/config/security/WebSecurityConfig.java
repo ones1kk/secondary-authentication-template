@@ -3,8 +3,10 @@ package io.github.ones1kk.authenticationtemplate.config.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.service.UserService;
 import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
+import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationHolderFilter;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationFilter;
+import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationHolderFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
 import io.github.ones1kk.authenticationtemplate.web.provider.SecondAuthenticationProvider;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
@@ -21,6 +23,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -67,7 +70,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    JwtProvider<Long> tokenProvider() {
+    JwtProvider<Authentication> tokenProvider() {
         return new JwtProvider<>(secretKey, messageSupport, objectMapper);
     }
 
@@ -83,7 +86,9 @@ public class WebSecurityConfig {
         secondFilter.setAuthenticationManager(authenticationManager());
 
         http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class)
-                .addFilterBefore(secondFilter, FilterSecurityInterceptor.class);
+                .addFilterBefore(new FirstAuthenticationHolderFilter(tokenProvider()), FilterSecurityInterceptor.class)
+                .addFilterBefore(secondFilter, FilterSecurityInterceptor.class)
+                .addFilterBefore(new SecondAuthenticationHolderFilter(tokenProvider()), FilterSecurityInterceptor.class);
     }
 
     private void logout(HttpSecurity http) throws Exception {

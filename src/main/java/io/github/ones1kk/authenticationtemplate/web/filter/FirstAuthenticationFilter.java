@@ -36,8 +36,8 @@ public class FirstAuthenticationFilter extends AbstractAuthenticationProcessingF
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         FirstLoginUserDto loginUser = objectMapper.readValue(request.getReader(), FirstLoginUserDto.class);
-        Authentication token = new FirstAuthenticationToken(loginUser.getId(), loginUser.getPassword());
+        Authentication authentication = new FirstAuthenticationToken(loginUser.getId(), loginUser.getPassword());
 
-        return super.getAuthenticationManager().authenticate(token);
+        return super.getAuthenticationManager().authenticate(authentication);
     }
 }

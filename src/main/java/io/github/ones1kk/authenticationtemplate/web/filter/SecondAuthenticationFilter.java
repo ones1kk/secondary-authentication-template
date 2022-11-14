@@ -3,8 +3,10 @@ package io.github.ones1kk.authenticationtemplate.web.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.config.constant.AuthenticationPath;
 import io.github.ones1kk.authenticationtemplate.web.dto.SecondLoginDto;
+import io.github.ones1kk.authenticationtemplate.web.dto.SecondUserDto;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -18,16 +20,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.springframework.util.StringUtils.hasText;
+
 public class SecondAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final ObjectMapper objectMapper;
 
+    private final JwtProvider<Authentication> jwtProvider;
+
     private static final RequestMatcher DEFAULT_REQUEST_MATCHER = new AntPathRequestMatcher(
             AuthenticationPath.SECOND_LOGIN_API_PATH.getPath(), HttpMethod.POST.name());
 
-    public SecondAuthenticationFilter(ObjectMapper objectMapper) {
+    public SecondAuthenticationFilter(ObjectMapper objectMapper, JwtProvider<Authentication> jwtProvider) {
         super(DEFAULT_REQUEST_MATCHER);
         this.objectMapper = objectMapper;
+        this.jwtProvider = jwtProvider;
     }
 
     @Override
@@ -45,8 +52,13 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         SecondLoginDto secondLoginDto = objectMapper.readValue(request.getReader(), SecondLoginDto.class);
-        Authentication token = new SecondAuthenticationToken(secondLoginDto);
+        String token = jwtProvider.resolveToken(request);
+        if (!hasText(token)) throw new SecurityException("M9");
 
-        return super.getAuthenticationManager().authenticate(token);
+        Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
+        Long id = (Long) authentication.getPrincipal();
+
+        Authentication authenticationToken = new SecondAuthenticationToken(new SecondUserDto(id, secondLoginDto.getAuthenticationNumber()));
+        return super.getAuthenticationManager().authenticate(authenticationToken);
     }
 }
