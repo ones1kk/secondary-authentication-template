@@ -3,7 +3,7 @@ package io.github.ones1kk.authenticationtemplate.web.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.config.constant.AuthenticationPath;
 import io.github.ones1kk.authenticationtemplate.web.dto.SecondLoginDto;
-import io.github.ones1kk.authenticationtemplate.web.dto.SecondUserDto;
+import io.github.ones1kk.authenticationtemplate.web.token.model.SecondAuthenticationUser;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
@@ -58,7 +58,7 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
         Long id = (Long) authentication.getPrincipal();
 
-        Authentication authenticationToken = new SecondAuthenticationToken(new SecondUserDto(id, secondLoginDto.getAuthenticationNumber()));
+        Authentication authenticationToken = new SecondAuthenticationToken(new SecondAuthenticationUser(id, secondLoginDto.getAuthenticationNumber()));
         return super.getAuthenticationManager().authenticate(authenticationToken);
     }
 }

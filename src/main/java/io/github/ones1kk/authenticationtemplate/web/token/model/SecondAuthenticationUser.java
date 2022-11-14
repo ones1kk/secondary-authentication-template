@@ -1,4 +1,4 @@
-package io.github.ones1kk.authenticationtemplate.web.dto;
+package io.github.ones1kk.authenticationtemplate.web.token.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SecondAuthenticationDto {
+public class SecondAuthenticationUser {
 
     private Long id;
-    private String authenticationNumber;
+    private String certificationNumber;
 }
