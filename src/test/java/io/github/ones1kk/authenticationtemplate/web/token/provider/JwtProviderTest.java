@@ -177,7 +177,7 @@ class JwtProviderTest {
         }
 
         @Test
-        @DisplayName("fail to get subject")
+        @DisplayName("fail to get authentication")
         void getAuthentication_fail() throws Exception {
             String token = UUID.randomUUID().toString();
 
