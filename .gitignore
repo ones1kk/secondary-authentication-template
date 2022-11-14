@@ -312,4 +312,7 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+# Bundle property files
+dynamic/
+
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,java,macos,gradle,intellij+iml,intellij
