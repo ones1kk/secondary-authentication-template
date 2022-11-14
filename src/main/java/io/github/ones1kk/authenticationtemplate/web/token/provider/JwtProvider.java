@@ -7,6 +7,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Deserializer;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
@@ -21,7 +22,7 @@ import static io.jsonwebtoken.SignatureAlgorithm.HS256;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.util.StringUtils.hasText;
 
-public class JwtProvider<T> implements HttpRequestTokenProvider<T> {
+public class JwtProvider<T extends Authentication> implements HttpRequestTokenProvider<T> {
 
     // 1 hours
     private final long accessExpiredTime = Duration.ofHours(1).toMillis();

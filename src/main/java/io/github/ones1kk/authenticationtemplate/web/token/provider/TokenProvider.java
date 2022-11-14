@@ -1,6 +1,8 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
-public interface TokenProvider<T> {
+import org.springframework.security.core.Authentication;
+
+public interface TokenProvider<T extends Authentication> {
 
     String createToken(T value, Long expiredTime);
 
