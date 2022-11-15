@@ -11,6 +11,8 @@ import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthentication
 import io.github.ones1kk.authenticationtemplate.web.provider.SecondAuthenticationProvider;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
 import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationSuccessHandler;
+import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.SecondAuthenticationFailureHandler;
+import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.SecondAuthenticationSuccessHandler;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
@@ -77,13 +79,15 @@ public class WebSecurityConfig {
     private void login(HttpSecurity http) throws Exception {
         AbstractAuthenticationProcessingFilter firstFilter = new FirstAuthenticationFilter(objectMapper);
         firstFilter.setAuthenticationManager(authenticationManager());
-
         firstFilter.setAuthenticationFailureHandler(
                 new FirstAuthenticationFailureHandler(objectMapper, messageSupport));
         firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper, messageSupport, tokenProvider()));
 
         AbstractAuthenticationProcessingFilter secondFilter = new SecondAuthenticationFilter(objectMapper, tokenProvider());
         secondFilter.setAuthenticationManager(authenticationManager());
+        secondFilter.setAuthenticationFailureHandler(
+                new SecondAuthenticationFailureHandler(objectMapper, messageSupport));
+        secondFilter.setAuthenticationSuccessHandler(new SecondAuthenticationSuccessHandler(objectMapper, messageSupport, tokenProvider()));
 
         http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class)
                 .addFilterBefore(new FirstAuthenticationHolderFilter(tokenProvider()), FilterSecurityInterceptor.class)

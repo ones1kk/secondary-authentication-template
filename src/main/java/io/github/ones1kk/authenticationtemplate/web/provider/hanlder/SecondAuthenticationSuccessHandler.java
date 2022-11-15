@@ -2,7 +2,7 @@ package io.github.ones1kk.authenticationtemplate.web.provider.hanlder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
-import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -14,11 +14,11 @@ import java.io.IOException;
 
 import static io.github.ones1kk.authenticationtemplate.web.token.provider.constant.TokenHeaderName.X_AUTH_TOKEN;
 
-public class FirstAuthenticationSuccessHandler extends AbstractAuthenticationHandler implements AuthenticationSuccessHandler {
+public class SecondAuthenticationSuccessHandler extends AbstractAuthenticationHandler implements AuthenticationSuccessHandler {
 
     private final JwtProvider<Authentication> jwtProvider;
 
-    public FirstAuthenticationSuccessHandler(ObjectMapper objectMapper, MessageSupport messageSupport, JwtProvider<Authentication> jwtProvider) {
+    public SecondAuthenticationSuccessHandler(ObjectMapper objectMapper, MessageSupport messageSupport, JwtProvider<Authentication> jwtProvider) {
         super(objectMapper, messageSupport);
         this.jwtProvider = jwtProvider;
     }
@@ -26,9 +26,9 @@ public class FirstAuthenticationSuccessHandler extends AbstractAuthenticationHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         Long id = (Long) authentication.getPrincipal();
-        Authentication token = new FirstAuthenticationToken(id);
-        String accessToken = jwtProvider.createAccessToken(token);
+        Authentication token = new SecondAuthenticationToken(id);
 
+        String accessToken = jwtProvider.createAccessToken(token);
         response.setHeader(X_AUTH_TOKEN.getName(), accessToken);
     }
 }

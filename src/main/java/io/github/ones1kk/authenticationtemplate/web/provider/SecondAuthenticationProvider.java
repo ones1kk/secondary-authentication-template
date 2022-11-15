@@ -1,6 +1,8 @@
 package io.github.ones1kk.authenticationtemplate.web.provider;
 
 import io.github.ones1kk.authenticationtemplate.web.dto.SecondLoginDto;
+import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
+import io.github.ones1kk.authenticationtemplate.web.token.model.SecondAuthenticationUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,16 +16,16 @@ public class SecondAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        SecondLoginDto secondLoginDto = (SecondLoginDto) authentication.getPrincipal();
-        String authenticationNumber = secondLoginDto.getAuthenticationNumber();
+        SecondAuthenticationUser secondUser = (SecondAuthenticationUser) authentication.getPrincipal();
+        String authenticationNumber = secondUser.getCertificationNumber();
 
         if (!ANSWER.equals(authenticationNumber)) {
             throw new BadCredentialsException("M3");
         }
 
-//        Authentication token = new SecondAuthenticationToken();
-
-        return null;
+        Authentication token = new SecondAuthenticationToken(secondUser.getId());
+        token.setAuthenticated(true);
+        return token;
     }
 
     @Override
