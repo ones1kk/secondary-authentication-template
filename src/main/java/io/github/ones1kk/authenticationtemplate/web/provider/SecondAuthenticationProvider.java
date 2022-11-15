@@ -1,6 +1,5 @@
 package io.github.ones1kk.authenticationtemplate.web.provider;
 
-import io.github.ones1kk.authenticationtemplate.web.dto.SecondLoginDto;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.model.SecondAuthenticationUser;
 import lombok.RequiredArgsConstructor;
