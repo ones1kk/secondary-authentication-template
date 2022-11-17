@@ -18,7 +18,7 @@ public class UserTokenService {
     }
 
     @Transactional
-    public UserToken save(UserToken userToken)  {
+    public UserToken save(UserToken userToken) {
         return userTokenRepository.save(userToken);
     }
 }

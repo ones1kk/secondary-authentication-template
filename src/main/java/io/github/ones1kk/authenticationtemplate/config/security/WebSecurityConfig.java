@@ -2,6 +2,7 @@ package io.github.ones1kk.authenticationtemplate.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authenticationtemplate.service.UserService;
+import io.github.ones1kk.authenticationtemplate.service.UserTokenService;
 import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationFilter;
 import io.github.ones1kk.authenticationtemplate.web.filter.FirstAuthenticationHolderFilter;
@@ -49,6 +50,8 @@ public class WebSecurityConfig {
 
     private final MessageSupport messageSupport;
 
+    private final UserTokenService userTokenService;
+
     @Value(value = "${token.secret-key}")
     private String secretKey;
 
@@ -87,7 +90,8 @@ public class WebSecurityConfig {
         secondFilter.setAuthenticationManager(authenticationManager());
         secondFilter.setAuthenticationFailureHandler(
                 new SecondAuthenticationFailureHandler(objectMapper, messageSupport));
-        secondFilter.setAuthenticationSuccessHandler(new SecondAuthenticationSuccessHandler(objectMapper, messageSupport, tokenProvider()));
+        secondFilter.setAuthenticationSuccessHandler(new SecondAuthenticationSuccessHandler(objectMapper, messageSupport, tokenProvider(),
+                userTokenService, userService));
 
         http.addFilterBefore(firstFilter, FilterSecurityInterceptor.class)
                 .addFilterBefore(new FirstAuthenticationHolderFilter(tokenProvider()), FilterSecurityInterceptor.class)
@@ -106,7 +110,6 @@ public class WebSecurityConfig {
         http.csrf().disable();
         // prevent to cross-origin resource sharing.
         http.cors().disable();
-        // REST API server should be session stateless.
         http.sessionManagement()
                 .sessionCreationPolicy(STATELESS);
     }
