@@ -29,6 +29,6 @@ public class SecondAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return SecondAuthenticationProvider.class.isAssignableFrom(authentication);
+        return SecondAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
