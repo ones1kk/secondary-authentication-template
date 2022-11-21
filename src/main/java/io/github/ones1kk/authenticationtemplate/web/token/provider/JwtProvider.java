@@ -2,8 +2,8 @@ package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Deserializer;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 import static io.github.ones1kk.authenticationtemplate.web.token.provider.constant.TokenHeaderName.X_AUTH_TOKEN;
 import static io.jsonwebtoken.SignatureAlgorithm.HS256;
@@ -34,16 +35,13 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
 
     private final Key signKey;
 
-    private final MessageSupport messageSupport;
-
     private final ObjectMapper objectMapper;
 
     private static final Deserializer<Map<String, ?>> JWT_DESERIALIZER = new JacksonDeserializer<>(new ObjectMapper().enable(DeserializationFeature.USE_LONG_FOR_INTS));
 
-    public JwtProvider(String secretKey, MessageSupport messageSupport, ObjectMapper objectMapper) {
+    public JwtProvider(String secretKey, ObjectMapper objectMapper) {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         this.signKey = Keys.hmacShaKeyFor(getSecretKeyByteArray(UTF_8));
-        this.messageSupport = messageSupport;
         this.objectMapper = objectMapper;
     }
 
@@ -68,8 +66,9 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
 
     @Override
     public boolean isExpired(String token) {
-        return getClaims(token)
-                .getExpiration()
+        Claims claims = getClaims(token);
+        if (claims == null) return true;
+        return claims.getExpiration()
                 .before(new Date());
     }
 
@@ -80,8 +79,11 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
 
     @Override
     public T getAuthentication(String token, Class<? extends T> clazz) {
-        Object authentication = getClaims(token)
-                .get(X_AUTH_TOKEN.getName());
+        Claims claims = getClaims(token);
+        if(claims == null) {
+            return null;
+        }
+        Object authentication = claims.get(X_AUTH_TOKEN.getName());
         return objectMapper.convertValue(authentication, clazz);
     }
 
@@ -95,6 +97,9 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
     @SuppressWarnings("unchecked")
     private boolean isEqualKey(String token, T key) throws Exception {
         T authentication = getAuthentication(token, (Class<? extends T>) key.getClass());
+        if(authentication == null) {
+            return false;
+        }
         return authentication.equals(key);
     }
 
@@ -106,16 +111,8 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (SecurityException e) {
-            throw new SecurityException(messageSupport.get("M9"));
-        } catch (MalformedJwtException e) {
-            throw new MalformedJwtException(messageSupport.get("M8"));
-        } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException(messageSupport.get("M7"));
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(messageSupport.get("M6"));
-        } catch (ExpiredJwtException e) {
-            throw new SecurityException(messageSupport.get("M5"));
+        } catch (Exception e) {
+            return null;
         }
     }
 
