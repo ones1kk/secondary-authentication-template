@@ -10,10 +10,7 @@ import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationF
 import io.github.ones1kk.authenticationtemplate.web.filter.SecondAuthenticationHolderFilter;
 import io.github.ones1kk.authenticationtemplate.web.provider.FirstAuthenticationProvider;
 import io.github.ones1kk.authenticationtemplate.web.provider.SecondAuthenticationProvider;
-import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationFailureHandler;
-import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.FirstAuthenticationSuccessHandler;
-import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.SecondAuthenticationFailureHandler;
-import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.SecondAuthenticationSuccessHandler;
+import io.github.ones1kk.authenticationtemplate.web.provider.hanlder.*;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
@@ -29,6 +26,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -61,6 +59,8 @@ public class WebSecurityConfig {
         authorizeRequest(http);
         login(http);
         logout(http);
+        exceptionHandling(http);
+
         return http.build();
     }
 
@@ -77,6 +77,11 @@ public class WebSecurityConfig {
     @Bean
     JwtProvider<Authentication> tokenProvider() {
         return new JwtProvider<>(secretKey, objectMapper);
+    }
+
+    @Bean
+    AuthenticationEntryPoint authenticationHolderEntryPoint() {
+        return new AuthenticationHolderEntryPoint(objectMapper, messageSupport);
     }
 
     private void login(HttpSecurity http) throws Exception {
@@ -102,6 +107,11 @@ public class WebSecurityConfig {
     private void logout(HttpSecurity http) throws Exception {
         http.logout()
                 .logoutUrl(LOGOUT_API_PATH.getPath());
+    }
+
+    private void exceptionHandling(HttpSecurity http) throws Exception {
+        http.exceptionHandling()
+                .authenticationEntryPoint(authenticationHolderEntryPoint());
     }
 
     private void configure(HttpSecurity http) throws Exception {
