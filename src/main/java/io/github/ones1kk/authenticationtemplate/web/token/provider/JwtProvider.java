@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
 
 import static io.github.ones1kk.authenticationtemplate.web.token.provider.constant.TokenHeaderName.X_AUTH_TOKEN;
 import static io.jsonwebtoken.SignatureAlgorithm.HS256;
@@ -80,7 +79,7 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
     @Override
     public T getAuthentication(String token, Class<? extends T> clazz) {
         Claims claims = getClaims(token);
-        if(claims == null) {
+        if (claims == null) {
             return null;
         }
         Object authentication = claims.get(X_AUTH_TOKEN.getName());
@@ -97,7 +96,7 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
     @SuppressWarnings("unchecked")
     private boolean isEqualKey(String token, T key) throws Exception {
         T authentication = getAuthentication(token, (Class<? extends T>) key.getClass());
-        if(authentication == null) {
+        if (authentication == null) {
             return false;
         }
         return authentication.equals(key);

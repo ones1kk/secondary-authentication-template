@@ -13,7 +13,8 @@ import org.springframework.security.core.Authentication;
 
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 @ExtendWith(MockitoExtension.class)
 class JwtProviderTest {
@@ -133,7 +134,7 @@ class JwtProviderTest {
             boolean isExpired = jwtProvider.isExpired(token);
 
             // then
-           assertThat(isExpired).isTrue();
+            assertThat(isExpired).isTrue();
         }
 
         @Test

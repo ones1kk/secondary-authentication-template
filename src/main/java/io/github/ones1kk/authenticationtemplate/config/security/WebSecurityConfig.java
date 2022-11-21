@@ -76,7 +76,7 @@ public class WebSecurityConfig {
 
     @Bean
     JwtProvider<Authentication> tokenProvider() {
-        return new JwtProvider<>(secretKey, messageSupport, objectMapper);
+        return new JwtProvider<>(secretKey, objectMapper);
     }
 
     private void login(HttpSecurity http) throws Exception {
