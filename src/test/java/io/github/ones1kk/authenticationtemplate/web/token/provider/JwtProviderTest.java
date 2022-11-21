@@ -1,15 +1,12 @@
 package io.github.ones1kk.authenticationtemplate.web.token.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.ones1kk.authenticationtemplate.web.exception.MessageSupport;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
-import io.jsonwebtoken.MalformedJwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
@@ -23,9 +20,6 @@ class JwtProviderTest {
 
     private static final String SECRET_KEY = UUID.randomUUID().toString();
 
-    @Mock
-    private MessageSupport messageSupport;
-
     @Spy
     private ObjectMapper objectMapper;
 
@@ -33,7 +27,7 @@ class JwtProviderTest {
 
     @BeforeEach
     void setup() {
-        jwtProvider = new JwtProvider<>(SECRET_KEY, messageSupport, objectMapper);
+        jwtProvider = new JwtProvider<>(SECRET_KEY, objectMapper);
     }
 
     @Test
@@ -101,8 +95,9 @@ class JwtProviderTest {
             Thread.sleep(1000L);
 
             // then
-            assertThatThrownBy(() -> jwtProvider.isValid(token, new FirstAuthenticationToken(2L)))
-                    .isInstanceOf(SecurityException.class);
+            boolean isValid = jwtProvider.isValid(token, new FirstAuthenticationToken(2L));
+
+            assertThat(isValid).isFalse();
         }
 
         @Test
@@ -114,10 +109,10 @@ class JwtProviderTest {
 
             // when
             Thread.sleep(1000L);
+            boolean isValid = jwtProvider.isValid(token, new FirstAuthenticationToken(2L));
 
             // then
-            assertThatThrownBy(() -> jwtProvider.isValid(token, new FirstAuthenticationToken(2L)))
-                    .isInstanceOf(SecurityException.class);
+            assertThat(isValid).isFalse();
         }
     }
 
@@ -131,14 +126,14 @@ class JwtProviderTest {
         void isExpired_success() throws Exception {
             // given
             Authentication key = new FirstAuthenticationToken(id);
-            String token = jwtProvider.createToken(key, 1000L);
+            String token = jwtProvider.createToken(key, 500L);
 
             // when
             Thread.sleep(1500L);
+            boolean isExpired = jwtProvider.isExpired(token);
 
             // then
-            assertThatThrownBy(() -> jwtProvider.isExpired(token))
-                    .isInstanceOf(SecurityException.class);
+           assertThat(isExpired).isTrue();
         }
 
         @Test
@@ -179,10 +174,15 @@ class JwtProviderTest {
         @Test
         @DisplayName("fail to get authentication")
         void getAuthentication_fail() throws Exception {
+            // given
             String token = UUID.randomUUID().toString();
 
-            assertThatThrownBy(() -> jwtProvider.getAuthentication(token, FirstAuthenticationToken.class))
-                    .isInstanceOf(MalformedJwtException.class);
+            // when
+            Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
+
+            // then
+            assertThat(authentication).isNull();
+            ;
         }
     }
 
