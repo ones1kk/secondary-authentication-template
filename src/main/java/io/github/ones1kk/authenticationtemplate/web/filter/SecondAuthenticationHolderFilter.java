@@ -1,5 +1,6 @@
 package io.github.ones1kk.authenticationtemplate.web.filter;
 
+import io.github.ones1kk.authenticationtemplate.web.exception.model.AuthenticationHolderException;
 import io.github.ones1kk.authenticationtemplate.web.token.FirstAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authenticationtemplate.web.token.provider.JwtProvider;
@@ -31,6 +32,10 @@ public class SecondAuthenticationHolderFilter extends OncePerRequestFilter {
         if (authentication instanceof FirstAuthenticationToken) {
             filterChain.doFilter(request, response);
             return;
+        }
+
+        if (authentication == null) {
+            throw new AuthenticationHolderException("M1");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
