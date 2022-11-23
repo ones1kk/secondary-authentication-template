@@ -29,7 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -85,13 +84,13 @@ public class WebSecurityConfig {
     }
 
     private void login(HttpSecurity http) throws Exception {
-        AbstractAuthenticationProcessingFilter firstFilter = new FirstAuthenticationFilter(objectMapper);
+        var firstFilter = new FirstAuthenticationFilter(objectMapper);
         firstFilter.setAuthenticationManager(authenticationManager());
         firstFilter.setAuthenticationFailureHandler(
                 new FirstAuthenticationFailureHandler(objectMapper, messageSupport));
         firstFilter.setAuthenticationSuccessHandler(new FirstAuthenticationSuccessHandler(objectMapper, messageSupport, tokenProvider()));
 
-        AbstractAuthenticationProcessingFilter secondFilter = new SecondAuthenticationFilter(objectMapper, tokenProvider());
+        var secondFilter = new SecondAuthenticationFilter(objectMapper, tokenProvider());
         secondFilter.setAuthenticationManager(authenticationManager());
         secondFilter.setAuthenticationFailureHandler(
                 new SecondAuthenticationFailureHandler(objectMapper, messageSupport));
