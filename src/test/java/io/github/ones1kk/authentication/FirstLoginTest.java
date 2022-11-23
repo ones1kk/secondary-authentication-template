@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.http.MediaType.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -55,14 +56,14 @@ public class FirstLoginTest {
             // when
             var action = mockMvc.perform(post("/login/first")
                     .content(loginUserDto)
-                    .contentType(MediaType.APPLICATION_JSON));
+                    .contentType(APPLICATION_JSON));
 
             // then
             action.andExpectAll(status().isOk(), header().exists("X_AUTH_TOKEN"));
         }
 
         @Test
-        @DisplayName("first login fail test, wrong password")
+        @DisplayName("first login fail test, wrong id")
         void login_fail_01() throws Exception {
             // given
             var loginUserDto = objectMapper.writeValueAsString(new FirstLoginUserDto("anonymous", "123123"));
@@ -70,14 +71,25 @@ public class FirstLoginTest {
             // when
             var action = mockMvc.perform(post("/login/first")
                     .content(loginUserDto)
-                    .contentType(MediaType.APPLICATION_JSON));
+                    .contentType(APPLICATION_JSON));
 
             // then
-            action.andExpect(status().is4xxClientError());
+            action.andExpect(status().isUnauthorized());
         }
 
+        @Test
+        @DisplayName("first login fail test, wrong password")
+        void login_fail_02() throws Exception {
+            // given
+            var loginUserDto = objectMapper.writeValueAsString(new FirstLoginUserDto("ones1kk", "321321"));
 
+            // when
+            var action = mockMvc.perform(post("/login/first")
+                    .content(loginUserDto)
+                    .contentType(APPLICATION_JSON));
+
+            // then
+            action.andExpect(status().isUnauthorized());
+        }
     }
-
-
 }
