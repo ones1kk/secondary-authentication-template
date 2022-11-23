@@ -8,6 +8,7 @@ import io.github.ones1kk.authentication.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authentication.web.token.model.SecondAuthenticationUser;
 import io.github.ones1kk.authentication.web.token.provider.JwtProvider;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,7 +46,8 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         if (token == null) return required;
 
         // 2nd authentication is required when 1st authentication is succeeded.
-        required &= (token instanceof FirstAuthenticationToken);
+        if (!(token instanceof FirstAuthenticationToken)) throw new DisabledException("M6");
+
         return required;
     }
 

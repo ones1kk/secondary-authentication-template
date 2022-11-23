@@ -18,7 +18,7 @@ public class SecondAuthenticationProvider implements AuthenticationProvider {
         SecondAuthenticationUser secondUser = (SecondAuthenticationUser) authentication.getPrincipal();
         String authenticationNumber = secondUser.getCertificationNumber();
 
-        if (!ANSWER.equals(authenticationNumber)) {
+        if (!authenticationNumber.equals(ANSWER)) {
             throw new BadCredentialsException("M3");
         }
 
