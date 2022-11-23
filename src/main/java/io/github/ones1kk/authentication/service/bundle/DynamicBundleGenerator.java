@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class DynamicBundleGenerator<T> {
 
-    public static final String DYNAMIC_RESOURCE_DIRECTORY_NAME = "dynamic";
+    public static final String DYNAMIC_RESOURCE_DIRECTORY_NAME = "bundles";
 
     private final String bundleName;
 

@@ -313,6 +313,6 @@ gradle-app.setting
 .classpath
 
 # Bundle property files
-dynamic/
+bundles/
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,java,macos,gradle,intellij+iml,intellij
