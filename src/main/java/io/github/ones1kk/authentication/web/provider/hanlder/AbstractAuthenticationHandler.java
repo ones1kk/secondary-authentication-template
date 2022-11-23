@@ -20,6 +20,7 @@ public abstract class AbstractAuthenticationHandler {
 
     protected void setErrorMessage(HttpServletResponse response, AuthenticationException exception) throws IOException {
         ExceptionResponse exceptionResponse = new ExceptionResponse(HttpStatus.UNAUTHORIZED.value(), messageSupport.get(exception.getMessage()));
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.getWriter()
                 .write(writePretty(exceptionResponse));
     }
