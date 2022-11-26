@@ -75,7 +75,7 @@ public class SecondLoginTest {
         }
 
         @Test
-        @DisplayName("second login fail, not token")
+        @DisplayName("second login fail, token doesn't exist")
         void login_fail_01() throws Exception {
             // given
             var longUserDto = objectMapper.writeValueAsString(new SecondLoginDto("123456"));
@@ -100,6 +100,21 @@ public class SecondLoginTest {
                     .content(longUserDto)
                     .contentType(APPLICATION_JSON)
                     .header("X_AUTH_TOKEN", UUID.randomUUID()));
+
+            // then
+            action.andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("second login test, wrong certification number")
+        void login_fail_03() throws Exception {
+            var longUserDto = objectMapper.writeValueAsString(new SecondLoginDto("111111"));
+
+            // when
+            var action = mockMvc.perform(post("/login/second")
+                    .content(longUserDto)
+                    .contentType(APPLICATION_JSON)
+                    .header("X_AUTH_TOKEN", token));
 
             // then
             action.andExpect(status().isUnauthorized());
