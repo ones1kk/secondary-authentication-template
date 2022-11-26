@@ -2,6 +2,7 @@ package io.github.ones1kk.authentication.web.provider.hanlder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authentication.web.exception.MessageSupport;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -18,6 +19,6 @@ public class SecondAuthenticationFailureHandler extends AbstractAuthenticationHa
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        setErrorMessage(response, exception);
+        setMessage(response, exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 }

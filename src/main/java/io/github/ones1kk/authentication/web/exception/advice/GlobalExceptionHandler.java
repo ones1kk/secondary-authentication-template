@@ -1,7 +1,7 @@
 package io.github.ones1kk.authentication.web.exception.advice;
 
 import io.github.ones1kk.authentication.web.exception.MessageSupport;
-import io.github.ones1kk.authentication.web.exception.model.ExceptionResponse;
+import io.github.ones1kk.authentication.web.exception.model.GlobalResponseModel;
 import io.github.ones1kk.authentication.web.exception.model.GlobalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
@@ -19,9 +19,9 @@ public class GlobalExceptionHandler {
     private final MessageSupport messageSupport;
 
     @ExceptionHandler(GlobalException.class)
-    ExceptionResponse handle(GlobalException e, HttpServletResponse response) {
+    GlobalResponseModel handle(GlobalException e, HttpServletResponse response) {
         String message = messageSupport.get(e.getCode(), e.getArgs());
         response.setStatus(e.getStatus().value());
-        return new ExceptionResponse(response.getStatus(), message);
+        return new GlobalResponseModel(response.getStatus(), message);
     }
 }

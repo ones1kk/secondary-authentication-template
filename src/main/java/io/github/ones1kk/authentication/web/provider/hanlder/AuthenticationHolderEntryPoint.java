@@ -2,6 +2,7 @@ package io.github.ones1kk.authentication.web.provider.hanlder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authentication.web.exception.MessageSupport;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
@@ -17,6 +18,6 @@ public class AuthenticationHolderEntryPoint extends AbstractAuthenticationHandle
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        setErrorMessage(response, exception);
+        setMessage(response, exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 }
