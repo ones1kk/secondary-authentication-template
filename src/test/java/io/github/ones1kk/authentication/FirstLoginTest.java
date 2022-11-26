@@ -55,7 +55,8 @@ public class FirstLoginTest {
                     .contentType(APPLICATION_JSON));
 
             // then
-            action.andExpectAll(status().isOk(), header().exists("X_AUTH_TOKEN"));
+            action.andExpectAll(status().isOk(),
+                    header().exists("X_AUTH_TOKEN"));
         }
 
         @Test

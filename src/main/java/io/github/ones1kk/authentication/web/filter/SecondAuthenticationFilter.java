@@ -45,9 +45,6 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         Authentication token = SecurityContextHolder.getContext().getAuthentication();
         if (token == null) return required;
 
-        // 2nd authentication is required when 1st authentication is succeeded.
-        if (!(token instanceof FirstAuthenticationToken)) throw new DisabledException("M6");
-
         return required;
     }
 
@@ -55,9 +52,13 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         SecondLoginDto secondLoginDto = objectMapper.readValue(request.getReader(), SecondLoginDto.class);
         String token = jwtProvider.resolveToken(request);
-        if (!hasText(token)) throw new SecurityException("M9");
+        if (!hasText(token)) throw new DisabledException("M9");
 
         Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
+
+        // 2nd authentication is required when 1st authentication is succeeded.
+        if(!(authentication instanceof  FirstAuthenticationToken)) throw new DisabledException("M6");
+
         Long id = (Long) authentication.getPrincipal();
 
         Authentication authenticationToken = new SecondAuthenticationToken(new SecondAuthenticationUser(id, secondLoginDto.getAuthenticationNumber()));

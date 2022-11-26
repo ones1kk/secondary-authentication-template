@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,12 +27,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.List;
 import java.util.stream.Stream;
 
 import static io.github.ones1kk.authentication.config.constant.AuthenticationPath.*;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -59,7 +62,6 @@ public class WebSecurityConfig {
         login(http);
         logout(http);
         exceptionHandling(http);
-
         return http.build();
     }
 
@@ -81,6 +83,11 @@ public class WebSecurityConfig {
     @Bean
     AuthenticationEntryPoint authenticationHolderEntryPoint() {
         return new AuthenticationHolderEntryPoint(objectMapper, messageSupport);
+    }
+
+    @Bean
+    AccessDeniedHandler accessDeniedHandler() {
+        return new SecurityAccessDeniedHandler(objectMapper, messageSupport);
     }
 
     private void login(HttpSecurity http) throws Exception {
@@ -105,12 +112,16 @@ public class WebSecurityConfig {
 
     private void logout(HttpSecurity http) throws Exception {
         http.logout()
-                .logoutUrl(LOGOUT_API_PATH.getPath());
+                .logoutRequestMatcher(new AntPathRequestMatcher(LOGOUT_API_PATH.getPath(), POST.name()))
+                .addLogoutHandler(new SecurityLogoutHandler())
+                .logoutSuccessHandler(new SecurityLogoutSuccessHandler(objectMapper, messageSupport))
+                .clearAuthentication(true);
     }
 
     private void exceptionHandling(HttpSecurity http) throws Exception {
         http.exceptionHandling()
-                .authenticationEntryPoint(authenticationHolderEntryPoint());
+                .authenticationEntryPoint(authenticationHolderEntryPoint())
+                .accessDeniedHandler(accessDeniedHandler());
     }
 
     private void configure(HttpSecurity http) throws Exception {
@@ -125,8 +136,8 @@ public class WebSecurityConfig {
 
     private void authorizeRequest(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers(HttpMethod.GET, staticResources()).permitAll()
-                .antMatchers(HttpMethod.GET, "/favicon.ic").permitAll()
+                .antMatchers(GET, staticResources()).permitAll()
+                .antMatchers(GET, "/favicon.ic").permitAll()
 
                 // 1st login
                 .antMatchers(FIRST_LOGIN_API_PATH.getPath())
@@ -144,9 +155,12 @@ public class WebSecurityConfig {
                 .antMatchers(allowedResources())
                 .permitAll()
 
-                // logout
+                // known resources with 2nd authentication
                 .antMatchers(LOGOUT_API_PATH.getPath())
-                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority());
+                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority())
+
+                // otherwise
+                .anyRequest().denyAll();
     }
 
 

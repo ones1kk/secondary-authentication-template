@@ -71,7 +71,8 @@ public class SecondLoginTest {
                     .header("X_AUTH_TOKEN", token));
 
             // then
-            action.andExpectAll(status().isOk(), header().exists("X_AUTH_TOKEN"));
+            action.andExpectAll(status().isOk(),
+                    header().exists("X_AUTH_TOKEN"));
         }
 
         @Test
