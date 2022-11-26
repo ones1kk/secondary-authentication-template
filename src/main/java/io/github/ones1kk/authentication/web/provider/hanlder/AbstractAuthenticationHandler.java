@@ -18,7 +18,7 @@ public abstract class AbstractAuthenticationHandler {
 
     private final MessageSupport messageSupport;
 
-    protected void setMessage(HttpServletResponse response, String  message, HttpStatus status) throws IOException {
+    protected void setMessage(HttpServletResponse response, String message, HttpStatus status) throws IOException {
         GlobalResponseModel globalResponseModel = new GlobalResponseModel(status.value(), messageSupport.get(message));
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON.getType());

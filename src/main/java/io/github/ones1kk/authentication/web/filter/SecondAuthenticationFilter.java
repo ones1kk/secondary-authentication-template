@@ -57,7 +57,7 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         Authentication authentication = jwtProvider.getAuthentication(token, FirstAuthenticationToken.class);
 
         // 2nd authentication is required when 1st authentication is succeeded.
-        if(!(authentication instanceof  FirstAuthenticationToken)) throw new DisabledException("M6");
+        if (!(authentication instanceof FirstAuthenticationToken)) throw new DisabledException("M6");
 
         Long id = (Long) authentication.getPrincipal();
 
