@@ -183,7 +183,6 @@ class JwtProviderTest {
 
             // then
             assertThat(authentication).isNull();
-            ;
         }
     }
 

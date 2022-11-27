@@ -120,6 +120,5 @@ public class SecondLoginTest {
             // then
             action.andExpect(status().isUnauthorized());
         }
-
     }
 }

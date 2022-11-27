@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import static io.github.ones1kk.authentication.web.token.provider.constant.TokenHeaderName.X_AUTH_TOKEN;
 
-public class FirstAuthenticationSuccessHandler extends AbstractAuthenticationHandler implements AuthenticationSuccessHandler {
+public class FirstAuthenticationSuccessHandler extends AbstractResponseHandler implements AuthenticationSuccessHandler {
 
     private final JwtProvider<Authentication> jwtProvider;
 

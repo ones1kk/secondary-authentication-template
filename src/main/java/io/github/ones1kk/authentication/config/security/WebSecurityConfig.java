@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ones1kk.authentication.service.UserService;
 import io.github.ones1kk.authentication.service.UserTokenService;
 import io.github.ones1kk.authentication.web.exception.MessageSupport;
-import io.github.ones1kk.authentication.web.filter.FirstAuthenticationFilter;
-import io.github.ones1kk.authentication.web.filter.FirstAuthenticationHolderFilter;
-import io.github.ones1kk.authentication.web.filter.SecondAuthenticationFilter;
-import io.github.ones1kk.authentication.web.filter.SecondAuthenticationHolderFilter;
+import io.github.ones1kk.authentication.web.filter.*;
 import io.github.ones1kk.authentication.web.provider.FirstAuthenticationProvider;
 import io.github.ones1kk.authentication.web.provider.SecondAuthenticationProvider;
 import io.github.ones1kk.authentication.web.provider.hanlder.*;
@@ -16,6 +13,7 @@ import io.github.ones1kk.authentication.web.token.SecondAuthenticationToken;
 import io.github.ones1kk.authentication.web.token.provider.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -130,8 +128,8 @@ public class WebSecurityConfig {
 
     private void exceptionHandling(HttpSecurity http) throws Exception {
         http.exceptionHandling()
-                .authenticationEntryPoint(authenticationHolderEntryPoint())
-                .accessDeniedHandler(accessDeniedHandler());
+                .accessDeniedHandler(accessDeniedHandler())
+                .authenticationEntryPoint(authenticationHolderEntryPoint());
     }
 
     private void configure(HttpSecurity http) throws Exception {
@@ -149,6 +147,10 @@ public class WebSecurityConfig {
                 .antMatchers(GET, staticResources()).permitAll()
                 .antMatchers(GET, "/favicon.ic").permitAll()
 
+                // exceptionally permitted paths
+                .antMatchers(allowedResources())
+                .permitAll()
+
                 // 1st login
                 .antMatchers(FIRST_LOGIN_API_PATH.getPath())
                 .permitAll()
@@ -157,20 +159,11 @@ public class WebSecurityConfig {
                 .antMatchers(SECOND_LOGIN_API_PATH.getPath())
                 .hasAnyAuthority(FirstAuthenticationToken.AUTHORITY.getAuthority())
 
-                // should be authenticated paths
+                //  known resources with 2nd authentication
                 .antMatchers(notAllowedResources())
-                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority())
+                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority());
 
-                // exceptionally permitted paths
-                .antMatchers(allowedResources())
-                .permitAll()
-
-                // known resources with 2nd authentication
-                .antMatchers(LOGOUT_API_PATH.getPath())
-                .hasAnyAuthority(SecondAuthenticationToken.AUTHORITY.getAuthority())
-
-                // otherwise
-                .anyRequest().denyAll();
+        // otherwise
     }
 
 
@@ -181,12 +174,12 @@ public class WebSecurityConfig {
     }
 
     private String[] notAllowedResources() {
-        return Stream.of("/not")
+        return Stream.of("/api/**")
                 .toArray(String[]::new);
     }
 
     private static String[] allowedResources() {
-        return Stream.of("/test")
+        return Stream.of("/test", "/logout")
                 .toArray(String[]::new);
     }
 }

@@ -38,6 +38,7 @@ public class JwtProvider<T extends Authentication> implements HttpRequestTokenPr
 
     private static final Deserializer<Map<String, ?>> JWT_DESERIALIZER = new JacksonDeserializer<>(new ObjectMapper().enable(DeserializationFeature.USE_LONG_FOR_INTS));
 
+    @SuppressWarnings("unchecked")
     public JwtProvider(String secretKey, ObjectMapper objectMapper) {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         this.signKey = Keys.hmacShaKeyFor(getSecretKeyByteArray(UTF_8));
