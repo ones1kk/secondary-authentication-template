@@ -90,6 +90,16 @@ public class WebSecurityConfig {
         return new SecurityAccessDeniedHandler(objectMapper, messageSupport);
     }
 
+    @Bean
+    FilterRegistrationBean<PreventAccessFilter> loggingFilter() {
+        FilterRegistrationBean<PreventAccessFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new PreventAccessFilter(tokenProvider(), objectMapper, messageSupport));
+        registrationBean.addUrlPatterns(FIRST_LOGIN_API_PATH.getPath());
+        registrationBean.setOrder(0);
+
+        return registrationBean;
+    }
+
     private void login(HttpSecurity http) throws Exception {
         var firstFilter = new FirstAuthenticationFilter(objectMapper);
         firstFilter.setAuthenticationManager(authenticationManager());
