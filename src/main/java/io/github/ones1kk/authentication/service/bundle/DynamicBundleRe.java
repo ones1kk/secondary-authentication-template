@@ -6,7 +6,8 @@ import java.util.Set;
 
 public class DynamicBundleRe {
 
-    private DynamicBundleRe() {}
+    private DynamicBundleRe() {
+    }
 
     public static <T> DynamicBundleBuilderRe<T> builder(BundleName bundleName, Set<T> set) {
         return new DynamicBundleBuilderRe<>(bundleName, set);
