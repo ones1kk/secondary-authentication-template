@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class FirstAuthenticationFailureHandler extends AbstractAuthenticationHandler implements AuthenticationFailureHandler {
+public class FirstAuthenticationFailureHandler extends AbstractResponseHandler implements AuthenticationFailureHandler {
 
     public FirstAuthenticationFailureHandler(ObjectMapper objectMapper, MessageSupport messageSupport) {
         super(objectMapper, messageSupport);

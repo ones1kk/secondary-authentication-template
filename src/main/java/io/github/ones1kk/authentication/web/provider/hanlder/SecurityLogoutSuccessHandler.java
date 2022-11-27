@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class SecurityLogoutSuccessHandler extends AbstractAuthenticationHandler implements LogoutSuccessHandler {
+public class SecurityLogoutSuccessHandler extends AbstractResponseHandler implements LogoutSuccessHandler {
 
     public SecurityLogoutSuccessHandler(ObjectMapper objectMapper, MessageSupport messageSupport) {
         super(objectMapper, messageSupport);

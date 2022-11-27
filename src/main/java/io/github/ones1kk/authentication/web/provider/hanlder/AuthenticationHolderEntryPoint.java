@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class AuthenticationHolderEntryPoint extends AbstractAuthenticationHandler implements AuthenticationEntryPoint {
+public class AuthenticationHolderEntryPoint extends AbstractResponseHandler implements AuthenticationEntryPoint {
 
     public AuthenticationHolderEntryPoint(ObjectMapper objectMapper, MessageSupport messageSupport) {
         super(objectMapper, messageSupport);

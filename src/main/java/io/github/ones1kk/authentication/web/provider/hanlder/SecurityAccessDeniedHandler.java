@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class SecurityAccessDeniedHandler extends AbstractAuthenticationHandler implements AccessDeniedHandler {
+public class SecurityAccessDeniedHandler extends AbstractResponseHandler implements AccessDeniedHandler {
 
     public SecurityAccessDeniedHandler(ObjectMapper objectMapper, MessageSupport messageSupport) {
         super(objectMapper, messageSupport);

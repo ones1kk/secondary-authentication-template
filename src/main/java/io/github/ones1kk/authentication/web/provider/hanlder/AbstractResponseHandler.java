@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RequiredArgsConstructor
-public abstract class AbstractAuthenticationHandler {
+public abstract class AbstractResponseHandler {
 
     private final ObjectMapper objectMapper;
 
