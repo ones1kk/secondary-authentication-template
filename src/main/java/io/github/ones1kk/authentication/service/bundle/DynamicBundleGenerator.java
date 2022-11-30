@@ -49,7 +49,7 @@ public class DynamicBundleGenerator<T> {
         Path path = resourcesDir.resolve(DYNAMIC_RESOURCE_DIRECTORY_NAME)
                 .resolve(this.bundleName);
 
-        // Clears all files in the bundle directory.
+        // clears all files in the bundle directory.
         FileSystemUtils.deleteRecursively(path.toFile());
         Files.createDirectories(path);
 
@@ -71,7 +71,7 @@ public class DynamicBundleGenerator<T> {
             List<String> fileNames = files.stream()
                     .map(File::getName)
                     .collect(toList());
-            log.info("Generated properties: {} to '{}'", fileNames, path);
+            log.info("generated properties: {} to '{}'", fileNames, path);
         }
 
         return files;
@@ -147,7 +147,7 @@ public class DynamicBundleGenerator<T> {
         JAR {
             @Override
             boolean isSupported() {
-                return false; // Not supported.
+                return false; // not supported.
             }
 
             @Override
